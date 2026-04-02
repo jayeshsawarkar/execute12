@@ -32,7 +32,7 @@
 </head>
 <body>
   <div id="root"></div>
-  <button id="pwa-install" onclick="installPWA()">📲 Install App to Home Screen</button>
+  <button id="pwa-install" onclick="installPWA()">Install App to Home Screen</button>
   <script>
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; document.getElementById('pwa-install').style.display = 'block'; });
