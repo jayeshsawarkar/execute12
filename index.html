@@ -1,230 +1,693 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#12141A">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="12WK Execute">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" type="image/png" href="icon-192.png">
-<title>12-Week Execution Program</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body,#root{height:100%;width:100%;overflow:hidden;background:#12141A;font-family:'DM Sans','SF Pro Display',-apple-system,sans-serif}
-input,textarea,button{font-family:inherit}
-input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-input[type=number]{-moz-appearance:textfield}
-::-webkit-scrollbar{width:0;background:transparent}
-@keyframes spin{to{transform:rotate(360deg)}}
-/* Install banner */
-.install-banner{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:calc(100% - 40px);max-width:400px;background:linear-gradient(135deg,#FF6B35,#E84855);border-radius:16px;padding:16px 20px;z-index:150;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 32px rgba(255,107,53,0.3);animation:slideUp 0.4s ease}
-@keyframes slideUp{from{transform:translateX(-50%) translateY(100px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#FF6B35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Execute12">
+  <meta name="description" content="12-Week Execution Program — Stop overthinking, start executing.">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>12-Week Execution Program</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body, #root { height: 100%; width: 100%; overflow: hidden; background: #12141A; }
+    body { font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; -webkit-font-smoothing: antialiased; }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type="number"] { -moz-appearance: textfield; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #pwa-install { display:none; position:fixed; bottom:80px; left:50%; transform:translateX(-50%); z-index:999;
+      background:linear-gradient(135deg,#FF6B35,#E85D2A); border:none; border-radius:14px; padding:12px 24px;
+      color:#fff; font-size:14px; font-weight:700; font-family:inherit; cursor:pointer;
+      box-shadow:0 4px 20px rgba(255,107,53,0.4); max-width:360px; width:calc(100% - 40px); text-align:center; }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body>
-<div id="root"></div>
+  <div id="root"></div>
+  <button id="pwa-install" onclick="installPWA()">📲 Install App to Home Screen</button>
+  <script>
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; document.getElementById('pwa-install').style.display = 'block'; });
+    function installPWA() { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(() => { document.getElementById('pwa-install').style.display = 'none'; deferredPrompt = null; }); } }
+    window.addEventListener('appinstalled', () => { document.getElementById('pwa-install').style.display = 'none'; });
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(e => console.log('SW:', e)); }
+  </script>
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
 
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-<script type="text/babel" data-type="module">
-const {useState,useEffect,useRef} = React;
+/* ═══════════════════════════════════════════════
+   EXERCISE SVG ILLUSTRATIONS
+   ═══════════════════════════════════════════════ */
+const mkIllust = (c, label, children) => (
+  <svg viewBox="0 0 220 130" style={{width:"100%",height:"100%"}}>
+    <rect width="220" height="130" fill={c+"06"} rx="8"/>
+    {children}
+    <text x="110" y="122" textAnchor="middle" fill={c} fontSize="9" fontWeight="700" fontFamily="sans-serif">{label}</text>
+  </svg>
+);
 
-/* ═══ STORAGE ═══ */
-const STORE_KEY = 'ep3_pwa';
-const DEFAULTS = {prof:{name:"",weightKg:0,goal:"gain",mult:17,cal:0,prot:0,wLbs:0,startDate:"",notes:""},week:1,wLog:{},isM:true,setLogs:{},addedF:[],wInput:""};
-
-function useStore(){
-  const[data,setData]=useState(DEFAULTS);
-  const[ready,setReady]=useState(false);
-  const saveRef=useRef(null);
-  useEffect(()=>{try{const s=localStorage.getItem(STORE_KEY);if(s)setData(d=>({...DEFAULTS,...JSON.parse(s)}))}catch{}setReady(true)},[]);
-  useEffect(()=>{if(!ready)return;clearTimeout(saveRef.current);saveRef.current=setTimeout(()=>{try{localStorage.setItem(STORE_KEY,JSON.stringify(data))}catch{}},400)},[data,ready]);
-  const update=(key,valOrFn)=>setData(prev=>{const nv=typeof valOrFn==="function"?valOrFn(prev[key]):valOrFn;return{...prev,[key]:nv}});
-  return{data,update,ready};
-}
-
-/* ═══ ILLUSTRATIONS ═══ */
-const mkI=(c,label,ch)=>(<svg viewBox="0 0 220 130" style={{width:"100%",height:"100%"}}><rect width="220" height="130" fill={c+"06"} rx="8"/>{ch}<text x="110" y="122" textAnchor="middle" fill={c} fontSize="9" fontWeight="700" fontFamily="sans-serif">{label}</text></svg>);
-
-const EI={
-  "Barbell Bench Press":c=>mkI(c,"BENCH PRESS",<g><rect x="25" y="88" width="170" height="6" rx="3" fill={c+"30"}/><rect x="20" y="48" width="180" height="5" rx="2.5" fill={c}/><rect x="10" y="38" width="18" height="25" rx="4" fill={c+"70"}/><rect x="192" y="38" width="18" height="25" rx="4" fill={c+"70"}/><circle cx="110" cy="72" r="9" fill={c+"50"}/><line x1="110" y1="81" x2="110" y2="92" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/><line x1="110" y1="83" x2="88" y2="52" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="83" x2="132" y2="52" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="92" x2="95" y2="102" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="92" x2="125" y2="102" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
-  "Barbell Row":c=>mkI(c,"BARBELL ROW",<g><rect x="40" y="95" width="140" height="4" rx="2" fill={c}/><circle cx="35" cy="97" r="11" fill={c+"40"} stroke={c+"60"} strokeWidth="1.5"/><circle cx="185" cy="97" r="11" fill={c+"40"} stroke={c+"60"} strokeWidth="1.5"/><circle cx="110" cy="38" r="9" fill={c+"50"}/><line x1="110" y1="47" x2="108" y2="68" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/><line x1="109" y1="55" x2="92" y2="78" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="109" y1="55" x2="128" y2="78" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
-  "Overhead Press":c=>mkI(c,"OVERHEAD PRESS",<g><rect x="45" y="18" width="130" height="5" rx="2.5" fill={c}/><rect x="38" y="11" width="16" height="18" rx="3" fill={c+"70"}/><rect x="166" y="11" width="16" height="18" rx="3" fill={c+"70"}/><circle cx="110" cy="48" r="9" fill={c+"50"}/><line x1="110" y1="57" x2="110" y2="80" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/><line x1="110" y1="62" x2="85" y2="22" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="62" x2="135" y2="22" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="80" x2="95" y2="100" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="80" x2="125" y2="100" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
-  "Incline Dumbbell Press":c=>mkI(c,"INCLINE DB PRESS",<g><polygon points="50,100 90,42 102,42 62,100" fill={c+"18"} stroke={c+"30"} strokeWidth="1"/><rect x="88" y="42" width="35" height="5" rx="2" fill={c+"30"}/><circle cx="105" cy="55" r="8" fill={c+"50"}/><line x1="105" y1="63" x2="100" y2="82" stroke={c+"50"} strokeWidth="3" strokeLinecap="round"/><line x1="102" y1="68" x2="78" y2="50" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="102" y1="68" x2="128" y2="50" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><rect x="72" y="47" width="12" height="6" rx="2" fill={c}/><rect x="122" y="47" width="12" height="6" rx="2" fill={c}/></g>),
-  "Incline Barbell Press":c=>mkI(c,"INCLINE BARBELL",<g><polygon points="50,100 90,42 102,42 62,100" fill={c+"18"} stroke={c+"30"} strokeWidth="1"/><rect x="70" y="42" width="80" height="5" rx="2" fill={c}/><rect x="62" y="38" width="14" height="12" rx="3" fill={c+"60"}/><rect x="144" y="38" width="14" height="12" rx="3" fill={c+"60"}/><circle cx="105" cy="55" r="8" fill={c+"50"}/><line x1="105" y1="63" x2="100" y2="82" stroke={c+"50"} strokeWidth="3" strokeLinecap="round"/><line x1="102" y1="68" x2="78" y2="45" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="102" y1="68" x2="128" y2="45" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
-  "Lat Pulldown / Pull-ups":c=>mkI(c,"LAT PULLDOWN",<g><rect x="35" y="10" width="150" height="5" rx="2.5" fill={c+"50"}/><rect x="100" y="15" width="5" height="16" fill={c+"35"}/><rect x="115" y="15" width="5" height="16" fill={c+"35"}/><rect x="88" y="29" width="44" height="5" rx="2" fill={c}/><circle cx="110" cy="52" r="9" fill={c+"50"}/><line x1="110" y1="61" x2="110" y2="84" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/><line x1="110" y1="65" x2="90" y2="34" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="65" x2="130" y2="34" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="84" x2="97" y2="102" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="84" x2="123" y2="102" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
-  "Barbell Curls":c=>mkI(c,"BARBELL CURLS",<g><circle cx="110" cy="28" r="9" fill={c+"50"}/><line x1="110" y1="37" x2="110" y2="68" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/><line x1="110" y1="48" x2="96" y2="62" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="96" y1="62" x2="98" y2="48" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="48" x2="124" y2="62" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="124" y1="62" x2="122" y2="48" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><rect x="90" y="44" width="40" height="5" rx="2" fill={c}/><line x1="110" y1="68" x2="98" y2="96" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="68" x2="122" y2="96" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
-  "Tricep Pushdowns":c=>mkI(c,"TRICEP PUSHDOWN",<g><rect x="103" y="5" width="14" height="50" fill={c+"15"}/><rect x="95" y="5" width="30" height="7" rx="3" fill={c+"50"}/><circle cx="110" cy="42" r="9" fill={c+"50"}/><line x1="110" y1="51" x2="110" y2="78" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/><line x1="110" y1="60" x2="98" y2="78" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="60" x2="122" y2="78" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><rect x="92" y="76" width="36" height="5" rx="2" fill={c}/><line x1="110" y1="78" x2="98" y2="102" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="78" x2="122" y2="102" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
-  "Barbell Squat":c=>mkI(c,"BARBELL SQUAT",<g><rect x="45" y="22" width="130" height="5" rx="2.5" fill={c}/><rect x="38" y="15" width="16" height="18" rx="3" fill={c+"70"}/><rect x="166" y="15" width="16" height="18" rx="3" fill={c+"70"}/><circle cx="110" cy="38" r="9" fill={c+"50"}/><line x1="110" y1="47" x2="110" y2="68" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/><line x1="110" y1="55" x2="92" y2="26" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="55" x2="128" y2="26" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="68" x2="90" y2="86" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="68" x2="130" y2="86" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="90" y1="86" x2="86" y2="105" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="130" y1="86" x2="134" y2="105" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
-  "Romanian Deadlift":c=>mkI(c,"ROMANIAN DEADLIFT",<g><rect x="55" y="88" width="110" height="4" rx="2" fill={c}/><circle cx="50" cy="90" r="10" fill={c+"40"} stroke={c+"60"} strokeWidth="1.5"/><circle cx="170" cy="90" r="10" fill={c+"40"} stroke={c+"60"} strokeWidth="1.5"/><circle cx="110" cy="30" r="9" fill={c+"50"}/><line x1="110" y1="39" x2="106" y2="62" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/><line x1="108" y1="50" x2="96" y2="76" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="108" y1="50" x2="122" y2="76" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
-  "Leg Press":c=>mkI(c,"LEG PRESS",<g><rect x="120" y="30" width="70" height="55" rx="6" fill={c+"12"} stroke={c+"25"} strokeWidth="1.5"/><circle cx="85" cy="65" r="9" fill={c+"50"}/><line x1="85" y1="74" x2="85" y2="92" stroke={c+"50"} strokeWidth="3" strokeLinecap="round"/><line x1="85" y1="85" x2="108" y2="72" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="108" y1="72" x2="125" y2="55" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
-  "Leg Curls":c=>mkI(c,"LEG CURLS",<g><rect x="45" y="50" width="130" height="10" rx="5" fill={c+"18"} stroke={c+"30"} strokeWidth="1"/><circle cx="80" cy="42" r="8" fill={c+"50"}/><line x1="80" y1="50" x2="110" y2="50" stroke={c+"50"} strokeWidth="3" strokeLinecap="round"/><line x1="110" y1="50" x2="130" y2="50" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="130" y1="50" x2="150" y2="30" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><circle cx="152" cy="28" r="7" fill={c+"35"} stroke={c} strokeWidth="1.5"/></g>),
-  "Bulgarian Split Squats":c=>mkI(c,"SPLIT SQUATS",<g><rect x="130" y="60" width="55" height="32" rx="6" fill={c+"15"} stroke={c+"25"} strokeWidth="1"/><circle cx="90" cy="25" r="9" fill={c+"50"}/><line x1="90" y1="34" x2="90" y2="58" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/><line x1="90" y1="58" x2="78" y2="82" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="78" y1="82" x2="75" y2="102" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="90" y1="58" x2="118" y2="68" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="118" y1="68" x2="140" y2="60" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
-  "Calf Raises":c=>mkI(c,"CALF RAISES",<g><rect x="88" y="92" width="44" height="8" rx="3" fill={c+"25"} stroke={c+"40"} strokeWidth="1"/><circle cx="110" cy="25" r="9" fill={c+"50"}/><line x1="110" y1="34" x2="110" y2="62" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/><line x1="110" y1="44" x2="92" y2="52" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="44" x2="128" y2="52" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="62" x2="105" y2="84" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="62" x2="115" y2="84" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
-  "Chest Flyes (Cable/DB)":c=>mkI(c,"CHEST FLYES",<g><circle cx="110" cy="30" r="9" fill={c+"50"}/><line x1="110" y1="39" x2="110" y2="70" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/><line x1="110" y1="50" x2="68" y2="58" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="50" x2="152" y2="58" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><rect x="60" y="55" width="14" height="6" rx="2" fill={c}/><rect x="146" y="55" width="14" height="6" rx="2" fill={c}/><path d="M74 52 Q110 35 146 52" stroke={c+"35"} strokeWidth="1.5" fill="none" strokeDasharray="4,3"/><line x1="110" y1="70" x2="98" y2="98" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="70" x2="122" y2="98" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
-  "Lateral Raises":c=>mkI(c,"LATERAL RAISES",<g><circle cx="110" cy="25" r="9" fill={c+"50"}/><line x1="110" y1="34" x2="110" y2="68" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/><line x1="110" y1="44" x2="62" y2="52" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="44" x2="158" y2="52" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><rect x="54" y="49" width="14" height="6" rx="2" fill={c}/><rect x="152" y="49" width="14" height="6" rx="2" fill={c}/><line x1="110" y1="68" x2="98" y2="98" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="68" x2="122" y2="98" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
-  "Face Pulls":c=>mkI(c,"FACE PULLS",<g><rect x="102" y="5" width="16" height="38" fill={c+"15"}/><rect x="94" y="38" width="32" height="5" rx="2" fill={c+"45"}/><circle cx="110" cy="58" r="9" fill={c+"50"}/><line x1="110" y1="67" x2="110" y2="92" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/><line x1="110" y1="72" x2="84" y2="52" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="72" x2="136" y2="52" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
-  "Deadlift":c=>mkI(c,"DEADLIFT",<g><rect x="45" y="88" width="130" height="4" rx="2" fill={c}/><circle cx="38" cy="90" r="12" fill={c+"35"} stroke={c+"55"} strokeWidth="1.5"/><circle cx="182" cy="90" r="12" fill={c+"35"} stroke={c+"55"} strokeWidth="1.5"/><circle cx="110" cy="22" r="9" fill={c+"50"}/><line x1="110" y1="31" x2="110" y2="58" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/><line x1="110" y1="42" x2="96" y2="72" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="42" x2="124" y2="72" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="58" x2="95" y2="78" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="58" x2="125" y2="78" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="95" y1="78" x2="92" y2="100" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="125" y1="78" x2="128" y2="100" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
-  "Leg Extensions":c=>mkI(c,"LEG EXTENSIONS",<g><rect x="55" y="40" width="55" height="38" rx="6" fill={c+"12"} stroke={c+"25"} strokeWidth="1.5"/><circle cx="82" cy="36" r="8" fill={c+"50"}/><line x1="82" y1="44" x2="82" y2="60" stroke={c+"50"} strokeWidth="3" strokeLinecap="round"/><line x1="82" y1="60" x2="82" y2="80" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="82" y1="80" x2="128" y2="74" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><circle cx="132" cy="73" r="6" fill={c+"35"} stroke={c} strokeWidth="1.5"/></g>),
+const ExIllust = {
+  "Barbell Bench Press": c => mkIllust(c, "BENCH PRESS", <g>
+    <rect x="25" y="88" width="170" height="6" rx="3" fill={c+"30"}/><rect x="20" y="48" width="180" height="5" rx="2.5" fill={c}/><rect x="10" y="38" width="18" height="25" rx="4" fill={c+"70"}/><rect x="192" y="38" width="18" height="25" rx="4" fill={c+"70"}/>
+    <circle cx="110" cy="72" r="9" fill={c+"50"}/><line x1="110" y1="81" x2="110" y2="92" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/>
+    <line x1="110" y1="83" x2="88" y2="52" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="83" x2="132" y2="52" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="110" y1="92" x2="95" y2="102" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="92" x2="125" y2="102" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
+  "Barbell Row": c => mkIllust(c, "BARBELL ROW", <g>
+    <rect x="40" y="95" width="140" height="4" rx="2" fill={c}/><circle cx="35" cy="97" r="11" fill={c+"40"} stroke={c+"60"} strokeWidth="1.5"/><circle cx="185" cy="97" r="11" fill={c+"40"} stroke={c+"60"} strokeWidth="1.5"/>
+    <circle cx="110" cy="38" r="9" fill={c+"50"}/><line x1="110" y1="47" x2="108" y2="68" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/>
+    <line x1="109" y1="55" x2="92" y2="78" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="109" y1="55" x2="128" y2="78" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
+  "Overhead Press": c => mkIllust(c, "OVERHEAD PRESS", <g>
+    <rect x="45" y="18" width="130" height="5" rx="2.5" fill={c}/><rect x="38" y="11" width="16" height="18" rx="3" fill={c+"70"}/><rect x="166" y="11" width="16" height="18" rx="3" fill={c+"70"}/>
+    <circle cx="110" cy="48" r="9" fill={c+"50"}/><line x1="110" y1="57" x2="110" y2="80" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/>
+    <line x1="110" y1="62" x2="85" y2="22" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="62" x2="135" y2="22" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="110" y1="80" x2="95" y2="100" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="80" x2="125" y2="100" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
+  "Incline Dumbbell Press": c => mkIllust(c, "INCLINE DB PRESS", <g>
+    <polygon points="50,100 90,42 102,42 62,100" fill={c+"18"} stroke={c+"30"} strokeWidth="1"/><rect x="88" y="42" width="35" height="5" rx="2" fill={c+"30"}/>
+    <circle cx="105" cy="55" r="8" fill={c+"50"}/><line x1="105" y1="63" x2="100" y2="82" stroke={c+"50"} strokeWidth="3" strokeLinecap="round"/>
+    <line x1="102" y1="68" x2="78" y2="50" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="102" y1="68" x2="128" y2="50" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/>
+    <rect x="72" y="47" width="12" height="6" rx="2" fill={c}/><rect x="122" y="47" width="12" height="6" rx="2" fill={c}/></g>),
+  "Incline Barbell Press": c => mkIllust(c, "INCLINE BARBELL", <g>
+    <polygon points="50,100 90,42 102,42 62,100" fill={c+"18"} stroke={c+"30"} strokeWidth="1"/><rect x="70" y="42" width="80" height="5" rx="2" fill={c}/>
+    <rect x="62" y="38" width="14" height="12" rx="3" fill={c+"60"}/><rect x="144" y="38" width="14" height="12" rx="3" fill={c+"60"}/>
+    <circle cx="105" cy="55" r="8" fill={c+"50"}/><line x1="105" y1="63" x2="100" y2="82" stroke={c+"50"} strokeWidth="3" strokeLinecap="round"/>
+    <line x1="102" y1="68" x2="78" y2="45" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="102" y1="68" x2="128" y2="45" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
+  "Lat Pulldown / Pull-ups": c => mkIllust(c, "LAT PULLDOWN", <g>
+    <rect x="35" y="10" width="150" height="5" rx="2.5" fill={c+"50"}/><rect x="100" y="15" width="5" height="16" fill={c+"35"}/><rect x="115" y="15" width="5" height="16" fill={c+"35"}/><rect x="88" y="29" width="44" height="5" rx="2" fill={c}/>
+    <circle cx="110" cy="52" r="9" fill={c+"50"}/><line x1="110" y1="61" x2="110" y2="84" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/>
+    <line x1="110" y1="65" x2="90" y2="34" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="65" x2="130" y2="34" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="110" y1="84" x2="97" y2="102" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="84" x2="123" y2="102" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
+  "Barbell Curls": c => mkIllust(c, "BARBELL CURLS", <g>
+    <circle cx="110" cy="28" r="9" fill={c+"50"}/><line x1="110" y1="37" x2="110" y2="68" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/>
+    <line x1="110" y1="48" x2="96" y2="62" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="96" y1="62" x2="98" y2="48" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="110" y1="48" x2="124" y2="62" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="124" y1="62" x2="122" y2="48" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/>
+    <rect x="90" y="44" width="40" height="5" rx="2" fill={c}/><ellipse cx="105" cy="44" rx="6" ry="4" fill={c+"25"}/><ellipse cx="115" cy="44" rx="6" ry="4" fill={c+"25"}/>
+    <line x1="110" y1="68" x2="98" y2="96" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="68" x2="122" y2="96" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
+  "Tricep Pushdowns": c => mkIllust(c, "TRICEP PUSHDOWN", <g>
+    <rect x="103" y="5" width="14" height="50" fill={c+"15"}/><rect x="95" y="5" width="30" height="7" rx="3" fill={c+"50"}/>
+    <circle cx="110" cy="42" r="9" fill={c+"50"}/><line x1="110" y1="51" x2="110" y2="78" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/>
+    <line x1="110" y1="60" x2="98" y2="78" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="60" x2="122" y2="78" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/>
+    <rect x="92" y="76" width="36" height="5" rx="2" fill={c}/>
+    <line x1="110" y1="78" x2="98" y2="102" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="78" x2="122" y2="102" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
+  "Barbell Squat": c => mkIllust(c, "BARBELL SQUAT", <g>
+    <rect x="45" y="22" width="130" height="5" rx="2.5" fill={c}/><rect x="38" y="15" width="16" height="18" rx="3" fill={c+"70"}/><rect x="166" y="15" width="16" height="18" rx="3" fill={c+"70"}/>
+    <circle cx="110" cy="38" r="9" fill={c+"50"}/><line x1="110" y1="47" x2="110" y2="68" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/>
+    <line x1="110" y1="55" x2="92" y2="26" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="55" x2="128" y2="26" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="110" y1="68" x2="90" y2="86" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="68" x2="130" y2="86" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="90" y1="86" x2="86" y2="105" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="130" y1="86" x2="134" y2="105" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
+  "Romanian Deadlift": c => mkIllust(c, "ROMANIAN DEADLIFT", <g>
+    <rect x="55" y="88" width="110" height="4" rx="2" fill={c}/><circle cx="50" cy="90" r="10" fill={c+"40"} stroke={c+"60"} strokeWidth="1.5"/><circle cx="170" cy="90" r="10" fill={c+"40"} stroke={c+"60"} strokeWidth="1.5"/>
+    <circle cx="110" cy="30" r="9" fill={c+"50"}/><line x1="110" y1="39" x2="106" y2="62" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/>
+    <line x1="108" y1="50" x2="96" y2="76" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="108" y1="50" x2="122" y2="76" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
+  "Leg Press": c => mkIllust(c, "LEG PRESS", <g>
+    <rect x="120" y="30" width="70" height="55" rx="6" fill={c+"12"} stroke={c+"25"} strokeWidth="1.5"/><rect x="130" y="20" width="50" height="14" rx="4" fill={c+"18"} stroke={c+"30"} strokeWidth="1"/>
+    <circle cx="85" cy="65" r="9" fill={c+"50"}/><line x1="85" y1="74" x2="85" y2="92" stroke={c+"50"} strokeWidth="3" strokeLinecap="round"/>
+    <line x1="85" y1="85" x2="108" y2="72" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="108" y1="72" x2="125" y2="55" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
+  "Leg Curls": c => mkIllust(c, "LEG CURLS", <g>
+    <rect x="45" y="50" width="130" height="10" rx="5" fill={c+"18"} stroke={c+"30"} strokeWidth="1"/>
+    <circle cx="80" cy="42" r="8" fill={c+"50"}/><line x1="80" y1="50" x2="110" y2="50" stroke={c+"50"} strokeWidth="3" strokeLinecap="round"/>
+    <line x1="110" y1="50" x2="130" y2="50" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="130" y1="50" x2="150" y2="30" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/>
+    <circle cx="152" cy="28" r="7" fill={c+"35"} stroke={c} strokeWidth="1.5"/></g>),
+  "Bulgarian Split Squats": c => mkIllust(c, "SPLIT SQUATS", <g>
+    <rect x="130" y="60" width="55" height="32" rx="6" fill={c+"15"} stroke={c+"25"} strokeWidth="1"/>
+    <circle cx="90" cy="25" r="9" fill={c+"50"}/><line x1="90" y1="34" x2="90" y2="58" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/>
+    <line x1="90" y1="58" x2="78" y2="82" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="78" y1="82" x2="75" y2="102" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="90" y1="58" x2="118" y2="68" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="118" y1="68" x2="140" y2="60" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
+  "Calf Raises": c => mkIllust(c, "CALF RAISES", <g>
+    <rect x="88" y="92" width="44" height="8" rx="3" fill={c+"25"} stroke={c+"40"} strokeWidth="1"/>
+    <circle cx="110" cy="25" r="9" fill={c+"50"}/><line x1="110" y1="34" x2="110" y2="62" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/>
+    <line x1="110" y1="44" x2="92" y2="52" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="44" x2="128" y2="52" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="110" y1="62" x2="105" y2="84" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="62" x2="115" y2="84" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="105" y1="84" x2="103" y2="92" stroke={c+"50"} strokeWidth="2" strokeLinecap="round"/><line x1="115" y1="84" x2="117" y2="92" stroke={c+"50"} strokeWidth="2" strokeLinecap="round"/>
+    <path d="M95 88 Q110 78 125 88" stroke={c} strokeWidth="1.5" fill="none" strokeDasharray="3,2"/></g>),
+  "Chest Flyes (Cable/DB)": c => mkIllust(c, "CHEST FLYES", <g>
+    <circle cx="110" cy="30" r="9" fill={c+"50"}/><line x1="110" y1="39" x2="110" y2="70" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/>
+    <line x1="110" y1="50" x2="68" y2="58" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="50" x2="152" y2="58" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/>
+    <rect x="60" y="55" width="14" height="6" rx="2" fill={c}/><rect x="146" y="55" width="14" height="6" rx="2" fill={c}/>
+    <path d="M74 52 Q110 35 146 52" stroke={c+"35"} strokeWidth="1.5" fill="none" strokeDasharray="4,3"/>
+    <line x1="110" y1="70" x2="98" y2="98" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="70" x2="122" y2="98" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
+  "Lateral Raises": c => mkIllust(c, "LATERAL RAISES", <g>
+    <circle cx="110" cy="25" r="9" fill={c+"50"}/><line x1="110" y1="34" x2="110" y2="68" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/>
+    <line x1="110" y1="44" x2="62" y2="52" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="44" x2="158" y2="52" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/>
+    <rect x="54" y="49" width="14" height="6" rx="2" fill={c}/><rect x="152" y="49" width="14" height="6" rx="2" fill={c}/>
+    <path d="M68 44 Q110 18 152 44" stroke={c+"30"} strokeWidth="1.5" fill="none" strokeDasharray="4,3"/>
+    <line x1="110" y1="68" x2="98" y2="98" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="68" x2="122" y2="98" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
+  "Face Pulls": c => mkIllust(c, "FACE PULLS", <g>
+    <rect x="102" y="5" width="16" height="38" fill={c+"15"}/><rect x="94" y="38" width="32" height="5" rx="2" fill={c+"45"}/>
+    <circle cx="110" cy="58" r="9" fill={c+"50"}/><line x1="110" y1="67" x2="110" y2="92" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/>
+    <line x1="110" y1="72" x2="84" y2="52" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="72" x2="136" y2="52" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
+  "Deadlift": c => mkIllust(c, "DEADLIFT", <g>
+    <rect x="45" y="88" width="130" height="4" rx="2" fill={c}/><circle cx="38" cy="90" r="12" fill={c+"35"} stroke={c+"55"} strokeWidth="1.5"/><circle cx="182" cy="90" r="12" fill={c+"35"} stroke={c+"55"} strokeWidth="1.5"/>
+    <circle cx="110" cy="22" r="9" fill={c+"50"}/><line x1="110" y1="31" x2="110" y2="58" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/>
+    <line x1="110" y1="42" x2="96" y2="72" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="42" x2="124" y2="72" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="110" y1="58" x2="95" y2="78" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="58" x2="125" y2="78" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="95" y1="78" x2="92" y2="100" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="125" y1="78" x2="128" y2="100" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>),
+  "Leg Extensions": c => mkIllust(c, "LEG EXTENSIONS", <g>
+    <rect x="55" y="40" width="55" height="38" rx="6" fill={c+"12"} stroke={c+"25"} strokeWidth="1.5"/><rect x="60" y="34" width="45" height="10" rx="4" fill={c+"18"}/>
+    <circle cx="82" cy="36" r="8" fill={c+"50"}/><line x1="82" y1="44" x2="82" y2="60" stroke={c+"50"} strokeWidth="3" strokeLinecap="round"/>
+    <line x1="82" y1="60" x2="82" y2="80" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="82" y1="80" x2="128" y2="74" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/>
+    <circle cx="132" cy="73" r="6" fill={c+"35"} stroke={c} strokeWidth="1.5"/></g>),
 };
-EI["Weighted Pull-ups / Lat Pulldown"]=EI["Lat Pulldown / Pull-ups"];
-EI["Cable / T-Bar Rows"]=c=>mkI(c,"CABLE ROWS",<g><rect x="40" y="95" width="140" height="4" rx="2" fill={c}/><circle cx="35" cy="97" r="11" fill={c+"40"}/><circle cx="185" cy="97" r="11" fill={c+"40"}/><circle cx="110" cy="38" r="9" fill={c+"50"}/><line x1="110" y1="47" x2="108" y2="68" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/><line x1="109" y1="55" x2="92" y2="78" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="109" y1="55" x2="128" y2="78" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>);
-EI["Hammer Curls"]=c=>mkI(c,"HAMMER CURLS",<g><circle cx="110" cy="28" r="9" fill={c+"50"}/><line x1="110" y1="37" x2="110" y2="68" stroke={c+"50"} strokeWidth="3.5" strokeLinecap="round"/><line x1="110" y1="48" x2="96" y2="62" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="48" x2="124" y2="62" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><rect x="90" y="44" width="40" height="5" rx="2" fill={c}/><line x1="110" y1="68" x2="98" y2="96" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/><line x1="110" y1="68" x2="122" y2="96" stroke={c+"50"} strokeWidth="2.5" strokeLinecap="round"/></g>);
-EI["Overhead Tricep Extension"]=EI["Overhead Press"];
-EI["Front / Hack Squat"]=EI["Barbell Squat"];
-EI["Walking Lunges"]=EI["Bulgarian Split Squats"];
-EI["Lying Leg Curls"]=EI["Leg Curls"];
-EI["Seated Calf Raises"]=EI["Calf Raises"];
+// FIX #6: proper unique aliases with correct labels
+ExIllust["Weighted Pull-ups / Lat Pulldown"] = ExIllust["Lat Pulldown / Pull-ups"];
+ExIllust["Cable / T-Bar Rows"] = c => mkIllust(c, "CABLE ROWS", ExIllust["Barbell Row"](c).props.children[1].props.children);
+ExIllust["Hammer Curls"] = c => mkIllust(c, "HAMMER CURLS", ExIllust["Barbell Curls"](c).props.children[1].props.children);
+ExIllust["Overhead Tricep Extension"] = c => mkIllust(c, "OH TRICEP EXT", ExIllust["Overhead Press"](c).props.children[1].props.children);
+ExIllust["Front / Hack Squat"] = c => mkIllust(c, "FRONT/HACK SQUAT", ExIllust["Barbell Squat"](c).props.children[1].props.children);
+ExIllust["Walking Lunges"] = c => mkIllust(c, "WALKING LUNGES", ExIllust["Bulgarian Split Squats"](c).props.children[1].props.children);
+ExIllust["Lying Leg Curls"] = c => mkIllust(c, "LYING LEG CURLS", ExIllust["Leg Curls"](c).props.children[1].props.children);
+ExIllust["Seated Calf Raises"] = c => mkIllust(c, "SEATED CALF RAISE", ExIllust["Calf Raises"](c).props.children[1].props.children);
 
-/* ═══ DATA ═══ */
-const FOODS=[{name:"Chicken Breast",cal:165,protein:31,carbs:0,fat:3.6,serving:"100g",cat:"protein",emoji:"🍗"},{name:"Eggs (2 large)",cal:140,protein:12,carbs:1,fat:10,serving:"2 eggs",cat:"protein",emoji:"🥚"},{name:"Greek Yogurt",cal:100,protein:17,carbs:6,fat:0.7,serving:"170g",cat:"protein",emoji:"🥛"},{name:"Salmon Fillet",cal:208,protein:20,carbs:0,fat:13,serving:"100g",cat:"protein",emoji:"🐟"},{name:"Whey Protein",cal:120,protein:24,carbs:3,fat:1,serving:"1 scoop",cat:"protein",emoji:"🥤"},{name:"Ground Turkey",cal:170,protein:21,carbs:0,fat:9,serving:"100g",cat:"protein",emoji:"🦃"},{name:"Cottage Cheese",cal:98,protein:11,carbs:3.4,fat:4.3,serving:"100g",cat:"protein",emoji:"🧀"},{name:"Tuna (canned)",cal:116,protein:26,carbs:0,fat:1,serving:"100g",cat:"protein",emoji:"🐟"},{name:"Tofu (firm)",cal:144,protein:17,carbs:3,fat:9,serving:"150g",cat:"protein",emoji:"🫘"},{name:"Milk (whole)",cal:150,protein:8,carbs:12,fat:8,serving:"1 cup",cat:"protein",emoji:"🥛"},{name:"White Rice",cal:130,protein:2.7,carbs:28,fat:0.3,serving:"100g",cat:"carb",emoji:"🍚"},{name:"Brown Rice",cal:123,protein:2.7,carbs:26,fat:1,serving:"100g",cat:"carb",emoji:"🍚"},{name:"Sweet Potato",cal:103,protein:2.3,carbs:24,fat:0.1,serving:"130g",cat:"carb",emoji:"🍠"},{name:"Oatmeal",cal:150,protein:5,carbs:27,fat:3,serving:"40g dry",cat:"carb",emoji:"🥣"},{name:"Wheat Bread",cal:160,protein:8,carbs:28,fat:2,serving:"2 slices",cat:"carb",emoji:"🍞"},{name:"Banana",cal:105,protein:1.3,carbs:27,fat:0.4,serving:"1 medium",cat:"carb",emoji:"🍌"},{name:"Pasta",cal:158,protein:6,carbs:31,fat:1,serving:"100g",cat:"carb",emoji:"🍝"},{name:"Avocado (half)",cal:161,protein:2,carbs:9,fat:15,serving:"100g",cat:"fat",emoji:"🥑"},{name:"Peanut Butter",cal:190,protein:7,carbs:7,fat:16,serving:"2 tbsp",cat:"fat",emoji:"🥜"},{name:"Olive Oil",cal:119,protein:0,carbs:0,fat:14,serving:"1 tbsp",cat:"fat",emoji:"🫒"},{name:"Almonds",cal:164,protein:6,carbs:6,fat:14,serving:"28g",cat:"fat",emoji:"🌰"},{name:"Mixed Veggies",cal:65,protein:3,carbs:13,fat:0.4,serving:"150g",cat:"veggie",emoji:"🥦"},{name:"Spinach Salad",cal:35,protein:4,carbs:4,fat:0.5,serving:"150g",cat:"veggie",emoji:"🥬"},{name:"Apple",cal:95,protein:0.5,carbs:25,fat:0.3,serving:"1 medium",cat:"veggie",emoji:"🍎"}];
+/* ═══════════════════════════════════════════════
+   DATA
+   ═══════════════════════════════════════════════ */
+const FOODS = [
+  {name:"Chicken Breast (grilled)",cal:165,protein:31,carbs:0,fat:3.6,serving:"100g / 3.5oz",cat:"protein",emoji:"🍗"},
+  {name:"Eggs (2 large)",cal:140,protein:12,carbs:1,fat:10,serving:"2 eggs",cat:"protein",emoji:"🥚"},
+  {name:"Greek Yogurt",cal:100,protein:17,carbs:6,fat:0.7,serving:"170g / 6oz",cat:"protein",emoji:"🥛"},
+  {name:"Salmon Fillet",cal:208,protein:20,carbs:0,fat:13,serving:"100g / 3.5oz",cat:"protein",emoji:"🐟"},
+  {name:"Whey Protein Shake",cal:120,protein:24,carbs:3,fat:1,serving:"1 scoop 30g",cat:"protein",emoji:"🥤"},
+  {name:"Ground Turkey",cal:170,protein:21,carbs:0,fat:9,serving:"100g / 3.5oz",cat:"protein",emoji:"🦃"},
+  {name:"Cottage Cheese",cal:98,protein:11,carbs:3.4,fat:4.3,serving:"100g / 3.5oz",cat:"protein",emoji:"🧀"},
+  {name:"Tuna (canned)",cal:116,protein:26,carbs:0,fat:1,serving:"100g / 3.5oz",cat:"protein",emoji:"🐟"},
+  {name:"Tofu (firm)",cal:144,protein:17,carbs:3,fat:9,serving:"150g / 5.3oz",cat:"protein",emoji:"🫘"},
+  {name:"Milk (whole)",cal:150,protein:8,carbs:12,fat:8,serving:"1 cup 240ml",cat:"protein",emoji:"🥛"},
+  {name:"White Rice (cooked)",cal:130,protein:2.7,carbs:28,fat:0.3,serving:"100g / 3.5oz",cat:"carb",emoji:"🍚"},
+  {name:"Brown Rice (cooked)",cal:123,protein:2.7,carbs:26,fat:1,serving:"100g / 3.5oz",cat:"carb",emoji:"🍚"},
+  {name:"Sweet Potato",cal:103,protein:2.3,carbs:24,fat:0.1,serving:"130g / 4.6oz",cat:"carb",emoji:"🍠"},
+  {name:"Oatmeal (dry)",cal:150,protein:5,carbs:27,fat:3,serving:"40g / 1.4oz",cat:"carb",emoji:"🥣"},
+  {name:"Whole Wheat Bread",cal:160,protein:8,carbs:28,fat:2,serving:"2 slices",cat:"carb",emoji:"🍞"},
+  {name:"Banana",cal:105,protein:1.3,carbs:27,fat:0.4,serving:"1 medium",cat:"carb",emoji:"🍌"},
+  {name:"Pasta (cooked)",cal:158,protein:6,carbs:31,fat:1,serving:"100g / 3.5oz",cat:"carb",emoji:"🍝"},
+  {name:"Avocado (half)",cal:161,protein:2,carbs:9,fat:15,serving:"100g / 3.5oz",cat:"fat",emoji:"🥑"},
+  {name:"Peanut Butter",cal:190,protein:7,carbs:7,fat:16,serving:"2 tbsp 32g",cat:"fat",emoji:"🥜"},
+  {name:"Olive Oil",cal:119,protein:0,carbs:0,fat:14,serving:"1 tbsp",cat:"fat",emoji:"🫒"},
+  {name:"Almonds",cal:164,protein:6,carbs:6,fat:14,serving:"28g / 1oz",cat:"fat",emoji:"🌰"},
+  {name:"Mixed Vegetables",cal:65,protein:3,carbs:13,fat:0.4,serving:"150g / 5.3oz",cat:"veggie",emoji:"🥦"},
+  {name:"Spinach Salad",cal:35,protein:4,carbs:4,fat:0.5,serving:"150g / 5.3oz",cat:"veggie",emoji:"🥬"},
+  {name:"Apple",cal:95,protein:0.5,carbs:25,fat:0.3,serving:"1 medium",cat:"veggie",emoji:"🍎"},
+];
 
-const MEALS={breakfast:[{name:"Power Oats",items:["Oatmeal","Whey Protein","Banana","Peanut Butter"],emoji:"🌅"},{name:"Egg & Toast",items:["Eggs (2 large)","Wheat Bread","Avocado (half)"],emoji:"🍳"},{name:"Greek Bowl",items:["Greek Yogurt","Banana","Almonds","Oatmeal"],emoji:"🥣"}],lunch:[{name:"Chicken & Rice",items:["Chicken Breast","White Rice","Mixed Veggies","Olive Oil"],emoji:"🍱"},{name:"Turkey Wrap",items:["Ground Turkey","Wheat Bread","Mixed Veggies","Avocado (half)"],emoji:"🌯"},{name:"Salmon Plate",items:["Salmon Fillet","Sweet Potato","Spinach Salad","Olive Oil"],emoji:"🐟"}],dinner:[{name:"Protein & Potato",items:["Chicken Breast","Sweet Potato","Mixed Veggies","Olive Oil"],emoji:"🥘"},{name:"Pasta Bowl",items:["Ground Turkey","Pasta","Mixed Veggies","Olive Oil"],emoji:"🍝"},{name:"Tofu Stir Fry",items:["Tofu (firm)","Brown Rice","Mixed Veggies","Olive Oil"],emoji:"🥡"}],snack:[{name:"Shake + PB",items:["Whey Protein","Peanut Butter","Banana"],emoji:"🥤"},{name:"Cottage + Nuts",items:["Cottage Cheese","Almonds","Apple"],emoji:"🧀"},{name:"Tuna Snack",items:["Tuna (canned)","Wheat Bread"],emoji:"🐟"}]};
+const MEALS={
+  breakfast:[{name:"Power Oats",items:["Oatmeal (dry)","Whey Protein Shake","Banana","Peanut Butter"],emoji:"🌅"},{name:"Egg & Toast",items:["Eggs (2 large)","Whole Wheat Bread","Avocado (half)"],emoji:"🍳"},{name:"Greek Bowl",items:["Greek Yogurt","Banana","Almonds","Oatmeal (dry)"],emoji:"🥣"}],
+  lunch:[{name:"Chicken & Rice",items:["Chicken Breast (grilled)","White Rice (cooked)","Mixed Vegetables","Olive Oil"],emoji:"🍱"},{name:"Turkey Wrap",items:["Ground Turkey","Whole Wheat Bread","Mixed Vegetables","Avocado (half)"],emoji:"🌯"},{name:"Salmon Plate",items:["Salmon Fillet","Sweet Potato","Spinach Salad","Olive Oil"],emoji:"🐟"}],
+  dinner:[{name:"Protein & Potato",items:["Chicken Breast (grilled)","Sweet Potato","Mixed Vegetables","Olive Oil"],emoji:"🥘"},{name:"Pasta Bowl",items:["Ground Turkey","Pasta (cooked)","Mixed Vegetables","Olive Oil"],emoji:"🍝"},{name:"Tofu Stir Fry",items:["Tofu (firm)","Brown Rice (cooked)","Mixed Vegetables","Olive Oil"],emoji:"🥡"}],
+  snack:[{name:"Shake + PB",items:["Whey Protein Shake","Peanut Butter","Banana"],emoji:"🥤"},{name:"Cottage + Nuts",items:["Cottage Cheese","Almonds","Apple"],emoji:"🧀"},{name:"Tuna Snack",items:["Tuna (canned)","Whole Wheat Bread"],emoji:"🐟"}],
+};
 
-const WD={upperA:{title:"Upper Body A",subtitle:"Compound Focus",day:"Monday",icon:"💪",color:"#FF6B35",exercises:[{id:"ua1",name:"Barbell Bench Press",sets:4,reps:"6-12",muscles:"Chest, Delts, Triceps",rest:"3 min",tips:"Arch back, retract shoulder blades. Lower to mid-chest."},{id:"ua2",name:"Barbell Row",sets:4,reps:"6-12",muscles:"Lats, Mid-Back, Biceps",rest:"3 min",tips:"Hinge 45°, pull to lower chest. Squeeze shoulder blades."},{id:"ua3",name:"Overhead Press",sets:4,reps:"8-12",muscles:"Shoulders, Triceps",rest:"2-3 min",tips:"Brace core, press overhead. Lock out at top."},{id:"ua4",name:"Incline Dumbbell Press",sets:3,reps:"8-12",muscles:"Upper Chest, Delts",rest:"2 min",tips:"Bench 30-45°. Press in arc. Full stretch at bottom."},{id:"ua5",name:"Lat Pulldown / Pull-ups",sets:3,reps:"8-15",muscles:"Lats, Biceps",rest:"2 min",tips:"Lean back, pull to upper chest. Squeeze lats."},{id:"ua6",name:"Barbell Curls",sets:3,reps:"8-12",muscles:"Biceps",rest:"90 sec",tips:"Elbows pinned. No swing. Slow negative."},{id:"ua7",name:"Tricep Pushdowns",sets:3,reps:"10-15",muscles:"Triceps",rest:"90 sec",tips:"Elbows tight. Full lockout. Squeeze."}]},lowerA:{title:"Lower Body A",subtitle:"Compound Focus",day:"Tuesday",icon:"🦵",color:"#4ECDC4",exercises:[{id:"la1",name:"Barbell Squat",sets:4,reps:"6-12",muscles:"Quads, Glutes, Core",rest:"3 min",tips:"Bar on traps, shoulder-width. Hit parallel."},{id:"la2",name:"Romanian Deadlift",sets:4,reps:"8-12",muscles:"Hamstrings, Glutes",rest:"3 min",tips:"Slight knee bend, hinge at hips. Bar stays close."},{id:"la3",name:"Leg Press",sets:3,reps:"12-20",muscles:"Quads, Glutes",rest:"2 min",tips:"Feet shoulder-width. 90° knee angle."},{id:"la4",name:"Leg Curls",sets:3,reps:"10-15",muscles:"Hamstrings",rest:"90 sec",tips:"Curl to glutes. Squeeze 1 sec. Slow eccentric."},{id:"la5",name:"Bulgarian Split Squats",sets:3,reps:"8-12 each",muscles:"Quads, Glutes",rest:"90 sec/leg",tips:"Rear foot on bench. Drop knee down. Stay upright."},{id:"la6",name:"Calf Raises",sets:4,reps:"12-20",muscles:"Calves",rest:"60 sec",tips:"Full range. 2-sec pause top. Slow stretch."}]},upperB:{title:"Upper Body B",subtitle:"Isolation Focus",day:"Thursday",icon:"🎯",color:"#FF6B35",exercises:[{id:"ub1",name:"Weighted Pull-ups / Lat Pulldown",sets:4,reps:"6-12",muscles:"Lats, Biceps",rest:"3 min",tips:"Add weight. Full dead hang, chin over bar."},{id:"ub2",name:"Incline Barbell Press",sets:4,reps:"6-12",muscles:"Upper Chest, Delts, Tri",rest:"3 min",tips:"Bench 30-45°. Touch upper chest."},{id:"ub3",name:"Cable / T-Bar Rows",sets:4,reps:"8-12",muscles:"Mid-Back, Lats, Biceps",rest:"2-3 min",tips:"Pull to belly. Pause and squeeze."},{id:"ub4",name:"Chest Flyes (Cable/DB)",sets:3,reps:"10-15",muscles:"Chest",rest:"90 sec",tips:"Slight elbow bend. Wide stretch. Squeeze top."},{id:"ub5",name:"Lateral Raises",sets:3,reps:"12-20",muscles:"Side Delts",rest:"90 sec",tips:"Lead with elbows. Shoulder height."},{id:"ub6",name:"Face Pulls",sets:3,reps:"15-20",muscles:"Rear Delts, Upper Back",rest:"90 sec",tips:"Pull rope to face. External rotation."},{id:"ub7",name:"Hammer Curls",sets:3,reps:"8-12",muscles:"Biceps, Forearms",rest:"90 sec",tips:"Neutral grip. No swing."},{id:"ub8",name:"Overhead Tricep Extension",sets:3,reps:"10-15",muscles:"Triceps",rest:"90 sec",tips:"Elbows by head. Full stretch. Lock out."}]},lowerB:{title:"Lower Body B",subtitle:"Isolation Focus",day:"Friday",icon:"🔥",color:"#4ECDC4",exercises:[{id:"lb1",name:"Deadlift",sets:4,reps:"5-10",muscles:"Posterior Chain, Traps",rest:"3-4 min",tips:"Bar over mid-foot. Chest up. Drive legs then hips."},{id:"lb2",name:"Front / Hack Squat",sets:3,reps:"8-12",muscles:"Quads, Core",rest:"3 min",tips:"Front rack or hack machine. Upright. Full depth."},{id:"lb3",name:"Walking Lunges",sets:3,reps:"12-15/leg",muscles:"Quads, Glutes, Hams",rest:"2 min",tips:"Long stride. Back knee low. Front heel drive."},{id:"lb4",name:"Lying Leg Curls",sets:3,reps:"10-15",muscles:"Hamstrings",rest:"90 sec",tips:"Face down, curl to glutes. Don't lift hips."},{id:"lb5",name:"Leg Extensions",sets:3,reps:"12-20",muscles:"Quads",rest:"90 sec",tips:"Full extension. Slow negative."},{id:"lb6",name:"Seated Calf Raises",sets:4,reps:"15-25",muscles:"Calves (Soleus)",rest:"60 sec",tips:"Knees 90°. Full stretch. Squeeze top."}]}};
+const WD={
+  upperA:{title:"Upper Body A",subtitle:"Compound Focus",day:"Monday",icon:"💪",color:"#FF6B35",exercises:[
+    {id:"ua1",name:"Barbell Bench Press",sets:4,reps:"6-12",muscles:"Chest, Front Delts, Triceps",rest:"3 min",tips:"Arch back slightly, retract shoulder blades, plant feet. Lower to mid-chest, press up and slightly back."},
+    {id:"ua2",name:"Barbell Row",sets:4,reps:"6-12",muscles:"Lats, Mid-Back, Biceps",rest:"3 min",tips:"Hinge at hips 45°, pull bar to lower chest. Squeeze shoulder blades at top."},
+    {id:"ua3",name:"Overhead Press",sets:4,reps:"8-12",muscles:"Shoulders, Triceps",rest:"2-3 min",tips:"Brace core, press overhead. Lock out at top. Slight lean back OK."},
+    {id:"ua4",name:"Incline Dumbbell Press",sets:3,reps:"8-12",muscles:"Upper Chest, Front Delts",rest:"2 min",tips:"Bench at 30-45°. Press DBs in arc. Full stretch at bottom."},
+    {id:"ua5",name:"Lat Pulldown / Pull-ups",sets:3,reps:"8-15",muscles:"Lats, Biceps",rest:"2 min",tips:"Lean slightly back, pull to upper chest. Squeeze lats."},
+    {id:"ua6",name:"Barbell Curls",sets:3,reps:"8-12",muscles:"Biceps",rest:"90 sec",tips:"Keep elbows pinned. Don't swing. Full contraction at top, slow negative."},
+    {id:"ua7",name:"Tricep Pushdowns",sets:3,reps:"10-15",muscles:"Triceps",rest:"90 sec",tips:"Elbows tight to body. Full lockout. Squeeze triceps."},
+  ]},
+  lowerA:{title:"Lower Body A",subtitle:"Compound Focus",day:"Tuesday",icon:"🦵",color:"#4ECDC4",exercises:[
+    {id:"la1",name:"Barbell Squat",sets:4,reps:"6-12",muscles:"Quads, Glutes, Core",rest:"3 min",tips:"Bar on upper traps, feet shoulder-width. Break at hips and knees. Hit parallel."},
+    {id:"la2",name:"Romanian Deadlift",sets:4,reps:"8-12",muscles:"Hamstrings, Glutes, Lower Back",rest:"3 min",tips:"Slight knee bend, hinge at hips. Bar stays close. Deep hamstring stretch."},
+    {id:"la3",name:"Leg Press",sets:3,reps:"12-20",muscles:"Quads, Glutes",rest:"2 min",tips:"Feet shoulder-width. Lower to 90° knee angle. Don't lock knees."},
+    {id:"la4",name:"Leg Curls",sets:3,reps:"10-15",muscles:"Hamstrings",rest:"90 sec",tips:"Curl pad to glutes. Squeeze 1 sec at top. Slow eccentric."},
+    {id:"la5",name:"Bulgarian Split Squats",sets:3,reps:"8-12 each",muscles:"Quads, Glutes",rest:"90 sec/leg",tips:"Rear foot on bench. Drop back knee straight down. Stay upright."},
+    {id:"la6",name:"Calf Raises",sets:4,reps:"12-20",muscles:"Calves",rest:"60 sec",tips:"Full range. 2-sec pause at top. Slow stretch at bottom."},
+  ]},
+  upperB:{title:"Upper Body B",subtitle:"Isolation Focus",day:"Thursday",icon:"🎯",color:"#FF6B35",exercises:[
+    {id:"ub1",name:"Weighted Pull-ups / Lat Pulldown",sets:4,reps:"6-12",muscles:"Lats, Biceps",rest:"3 min",tips:"Add weight via belt. Full dead hang, chin over bar."},
+    {id:"ub2",name:"Incline Barbell Press",sets:4,reps:"6-12",muscles:"Upper Chest, Delts, Triceps",rest:"3 min",tips:"Bench at 30-45°. Touch upper chest. Press in arc over face."},
+    {id:"ub3",name:"Cable / T-Bar Rows",sets:4,reps:"8-12",muscles:"Mid-Back, Lats, Biceps",rest:"2-3 min",tips:"Pull to belly button. Pause and squeeze. Control negative."},
+    {id:"ub4",name:"Chest Flyes (Cable/DB)",sets:3,reps:"10-15",muscles:"Chest",rest:"90 sec",tips:"Slight elbow bend. Wide for stretch. Squeeze chest at top."},
+    {id:"ub5",name:"Lateral Raises",sets:3,reps:"12-20",muscles:"Side Delts",rest:"90 sec",tips:"Lead with elbows. Raise to shoulder height. Slight forward lean."},
+    {id:"ub6",name:"Face Pulls",sets:3,reps:"15-20",muscles:"Rear Delts, Upper Back",rest:"90 sec",tips:"Cable high, pull rope to face. Separate hands. External rotation."},
+    {id:"ub7",name:"Hammer Curls",sets:3,reps:"8-12",muscles:"Biceps, Forearms",rest:"90 sec",tips:"Neutral grip. No swinging. Squeeze forearms at top."},
+    {id:"ub8",name:"Overhead Tricep Extension",sets:3,reps:"10-15",muscles:"Triceps",rest:"90 sec",tips:"Elbows close to head. Full stretch bottom. Lock out top."},
+  ]},
+  lowerB:{title:"Lower Body B",subtitle:"Isolation Focus",day:"Friday",icon:"🔥",color:"#4ECDC4",exercises:[
+    {id:"lb1",name:"Deadlift",sets:4,reps:"5-10",muscles:"Posterior Chain, Traps",rest:"3-4 min",tips:"Bar over mid-foot. Chest up, hips back. Drive legs then hips."},
+    {id:"lb2",name:"Front / Hack Squat",sets:3,reps:"8-12",muscles:"Quads, Core",rest:"3 min",tips:"Front rack or hack machine. Stay upright. Full depth."},
+    {id:"lb3",name:"Walking Lunges",sets:3,reps:"12-15/leg",muscles:"Quads, Glutes, Hams",rest:"2 min",tips:"Long stride. Back knee nearly touches ground. Front heel drive."},
+    {id:"lb4",name:"Lying Leg Curls",sets:3,reps:"10-15",muscles:"Hamstrings",rest:"90 sec",tips:"Face down, curl to glutes. Don't lift hips. Squeeze top."},
+    {id:"lb5",name:"Leg Extensions",sets:3,reps:"12-20",muscles:"Quads",rest:"90 sec",tips:"Full extension, squeeze quads. Slow negative. No momentum."},
+    {id:"lb6",name:"Seated Calf Raises",sets:4,reps:"15-25",muscles:"Calves (Soleus)",rest:"60 sec",tips:"Knees at 90°. Full stretch bottom. Pause and squeeze top."},
+  ]},
+};
 
-const PHASES=[{weeks:"1-2",label:"Foundation",desc:"Learn movements, find weights",color:"#4ECDC4"},{weeks:"3-6",label:"Build",desc:"+1-2 reps/week",color:"#FF6B35"},{weeks:"7-10",label:"Overload",desc:"Increase weight at top range",color:"#E84855"},{weeks:"11-12",label:"Deload",desc:"Reduce 30%, form focus",color:"#7B68EE"}];
-const FAQS=[{q:"Miss a workout?",a:"Do it next day. Shift schedule."},{q:"Add exercises?",a:"No. Program is optimised."},{q:"What about abs?",a:"Compounds hit core. Add planks. Abs = kitchen."},{q:"No equipment?",a:"Use alternatives. Pattern > tool."},{q:"No results?",a:"1) Not going to failure 2) Nutrition off 3) Not 12 weeks yet."},{q:"Switch days?",a:"Keep pattern: compound upper→lower→rest→iso upper→lower→rest×2."}];
+const PHASES=[{weeks:"1-2",label:"Foundation",desc:"Learn movements, find working weights",color:"#4ECDC4"},{weeks:"3-6",label:"Build",desc:"Push +1-2 reps each week",color:"#FF6B35"},{weeks:"7-10",label:"Overload",desc:"Increase weight 2.5-5kg at top range",color:"#E84855"},{weeks:"11-12",label:"Deload",desc:"Reduce 30%, focus form",color:"#7B68EE"}];
+const FAQS=[{q:"Miss a workout?",a:"Do it next day. Shift schedule. Don't skip."},{q:"Add exercises?",a:"No. Program is optimised. Stick to it."},{q:"What about abs?",a:"Compounds hit core. Add 3 sets planks if wanted. Abs = kitchen."},{q:"No equipment?",a:"Use alternatives. Pattern > tool."},{q:"No results?",a:"1) Not going to failure 2) Nutrition off 3) Not 12 weeks yet."},{q:"Switch days?",a:"Keep pattern: compound upper→lower→rest→iso upper→lower→rest×2."}];
 
-const kgToLb=kg=>Math.round(kg*2.205*10)/10;
-const lbToKg=lb=>Math.round(lb/2.205*10)/10;
-const getPhase=w=>w<=2?PHASES[0]:w<=6?PHASES[1]:w<=10?PHASES[2]:PHASES[3];
-const rSec=r=>r.includes("3-4")?210:r.includes("2-3")?150:r.includes("3")?180:r.includes("2")?120:r.includes("90")?90:60;
-const mealT=items=>items.reduce((t,n)=>{const f=FOODS.find(x=>x.name===n);return f?{cal:t.cal+f.cal,protein:t.protein+f.protein,carbs:t.carbs+f.carbs,fat:t.fat+f.fat}:t},{cal:0,protein:0,carbs:0,fat:0});
+/* ═══════════════════════════════════════════════
+   HELPERS
+   ═══════════════════════════════════════════════ */
+const kgToLb = kg => Math.round(kg * 2.205 * 10) / 10;
+const lbToKg = lb => Math.round(lb / 2.205 * 10) / 10;
+const getPhase = w => w <= 2 ? PHASES[0] : w <= 6 ? PHASES[1] : w <= 10 ? PHASES[2] : PHASES[3];
+const restSec = r => r.includes("3-4")?210:r.includes("2-3")?150:r.includes("3")?180:r.includes("2")?120:r.includes("90")?90:60;
+const mealTotals = items => items.reduce((t, n) => { const f = FOODS.find(x => x.name === n); return f ? { cal:t.cal+f.cal, protein:t.protein+f.protein, carbs:t.carbs+f.carbs, fat:t.fat+f.fat } : t }, { cal:0, protein:0, carbs:0, fat:0 });
 
-/* ═══ ICONS ═══ */
-const Ic={Home:()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,Dum:()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6.5 6.5h11M6.5 17.5h11M2 12h2M20 12h2M4 8v8M20 8v8M6 6v12M18 6v12"/></svg>,App:()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C9 2 7 4 7 4s-3 2-3 7 3 9 8 9 8-4 8-9-3-7-3-7-2-2-5-2z"/><path d="M12 2c1-1 3-1 3-1"/></svg>,Bar:()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,Inf:()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>,Chk:()=><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>,Dn:()=><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>,Up:()=><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="18 15 12 9 6 15"/></svg>,Clk:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,Tgt:()=><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,Fire:()=><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22c-4.97 0-9-2.69-9-6v-1c0-3 2-5.5 4-7 .5 2.5 2 3 3 3-1-3 1-7 5-9 0 3 1.5 5 3 6 1-1 2-2.5 2-5 2 1.5 4 4 4 7v1c0 3.31-4.03 6-9 6z"/></svg>,Swap:()=><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>,Eye:()=><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/></svg>,Undo:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 105.64-11.36L1 10"/></svg>};
+/* ═══════════════════════════════════════════════
+   PERSISTENCE HOOK — uses window.storage API
+   FIX #1: Replaced localStorage (which crashes artifacts)
+   ═══════════════════════════════════════════════ */
+const STORE_KEY = "ep3_data";
+const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const WO_ORDER = ["upperA","lowerA","upperB","lowerB"];
+const DEFAULT_SCHED = {0:"upperA",1:"lowerA",3:"upperB",4:"lowerB"};
+const DEFAULTS = { prof:{name:"",weightKg:0,goal:"gain",mult:17,cal:0,prot:0,wLbs:0,startDate:"",notes:""}, week:1, wLog:{}, isM:true, setLogs:{}, addedF:[], wInput:"", sched:{0:"upperA",1:"lowerA",3:"upperB",4:"lowerB"} };
 
-function UBtn({isM,toggle}){return<button onClick={toggle} style={{display:"flex",alignItems:"center",gap:5,background:"#1A1D23",border:"1px solid #2A2D35",borderRadius:10,padding:"6px 12px",cursor:"pointer"}}><Ic.Swap/><span style={{fontSize:11,fontWeight:700,color:isM?"#4ECDC4":"#FF6B35"}}>{isM?"METRIC":"US"}</span></button>}
+function usePersistedState() {
+  const [data, setData] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORE_KEY);
+      if (saved) { return { ...DEFAULTS, ...JSON.parse(saved) }; }
+    } catch (e) {}
+    return DEFAULTS;
+  });
+  const [ready] = useState(true);
+  const saveRef = useRef(null);
 
-/* ═══════ THE APP ═══════ */
-function App(){
-  const{data,update,ready}=useStore();
-  const{prof,week,wLog,isM,setLogs,addedF,wInput}=data;
-  const[tab,setTab]=useState("home");
-  const[aWo,setAWo]=useState(null);
-  const[expEx,setExpEx]=useState(null);
-  const[restL,setRestL]=useState(0);
-  const[showEx,setShowEx]=useState(null);
-  const[mTab,setMTab]=useState("breakfast");
-  const[showDb,setShowDb]=useState(false);
-  const[fFilt,setFFilt]=useState("all");
-  const[openFaq,setOpenFaq]=useState(null);
-  const[showInstall,setShowInstall]=useState(false);
-  const installRef=useRef(null);
+  useEffect(() => {
+    clearTimeout(saveRef.current);
+    saveRef.current = setTimeout(() => {
+      try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {}
+    }, 300);
+  }, [data]);
 
-  useEffect(()=>{if(restL>0){const t=setTimeout(()=>setRestL(r=>r-1),1000);return()=>clearTimeout(t)}},[restL]);
-  useEffect(()=>{const h=e=>{e.preventDefault();installRef.current=e;setShowInstall(true)};window.addEventListener('beforeinstallprompt',h);return()=>window.removeEventListener('beforeinstallprompt',h)},[]);
+  const update = (key, valOrFn) => {
+    setData(prev => {
+      const newVal = typeof valOrFn === "function" ? valOrFn(prev[key]) : valOrFn;
+      return { ...prev, [key]: newVal };
+    });
+  };
 
-  const phase=getPhase(week);const thisWk=wLog[week]?Object.keys(wLog[week]).length:0;
-  const totalW=Object.values(wLog).reduce((s,w)=>s+Object.keys(w).length,0);
-  const streak=(()=>{let s=0;for(let w=week;w>=1;w--){if(wLog[w]&&Object.keys(wLog[w]).length>0)s++;else break;}return s})();
-  const wN=parseFloat(wInput)||0;
-  const wKg=isM?wN:lbToKg(wN);const wLbs=isM?kgToLb(wN):wN;
-  const cal=Math.round(wLbs*prof.mult);const prot=Math.round(wLbs);
-  const toggleU=()=>{const v=parseFloat(wInput);if(v){update("wInput",String(Math.round((isM?kgToLb(v):lbToKg(v))*10)/10))}update("isM",!isM)};
-  useEffect(()=>{if(wN>0)update("prof",p=>({...p,weightKg:Math.round(wKg*10)/10,cal,prot,wLbs:Math.round(wLbs)}))},[wInput,isM,prof.mult,prof.goal]);
-  const gm={lose:[10,11,12],maintain:[13,14,15],gain:[16,17,18]};
-  const addT=addedF.reduce((t,f)=>({cal:t.cal+f.cal*f.qty,protein:t.protein+f.protein*f.qty,carbs:t.carbs+f.carbs*f.qty,fat:t.fat+f.fat*f.qty}),{cal:0,protein:0,carbs:0,fat:0});
-  const wo=aWo?WD[aWo]:null;
-  const S={card:{background:"#1A1D23",borderRadius:16,padding:"20px",border:"1px solid #2A2D35"}};
-
-  if(!ready)return<div style={{maxWidth:430,margin:"0 auto",height:"100vh",background:"#12141A",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:16}}><div style={{width:40,height:40,border:"3px solid #2A2D35",borderTopColor:"#FF6B35",borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/><div style={{color:"#6B7280",fontSize:13}}>Loading...</div></div>;
-
-  const doInstall=async()=>{if(!installRef.current)return;installRef.current.prompt();await installRef.current.userChoice;setShowInstall(false);installRef.current=null};
-
-  /* ─── HOME ─── */
-  const renderHome=()=>(<div style={{padding:"0 20px 100px"}}>
-    <div style={{padding:"32px 0 24px",display:"flex",justifyContent:"space-between",alignItems:"start"}}><div><div style={{fontSize:13,fontWeight:600,letterSpacing:3,color:"#FF6B35",textTransform:"uppercase",marginBottom:8}}>12-Week Execution</div><h1 style={{fontSize:30,fontWeight:800,color:"#fff",margin:0,lineHeight:1.1}}>{prof.name?`Let's go, ${prof.name.split(" ")[0]}`:"Dashboard"}</h1><p style={{color:"#8A8F98",fontSize:14,marginTop:8}}>Week {week}/12 · {phase.label}</p></div><UBtn isM={isM} toggle={toggleU}/></div>
-    <div style={{background:`linear-gradient(135deg,${phase.color}15,${phase.color}08)`,border:`1px solid ${phase.color}30`,borderRadius:16,padding:"16px 20px",marginBottom:20}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div><div style={{fontSize:11,fontWeight:700,letterSpacing:2,color:phase.color,textTransform:"uppercase"}}>Phase: {phase.label}</div><div style={{fontSize:13,color:"#8A8F98",marginTop:4}}>{phase.desc}</div></div><div style={{fontSize:36}}>{phase===PHASES[0]?"📐":phase===PHASES[1]?"📈":phase===PHASES[2]?"🔥":"🧘"}</div></div></div>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:24}}>{[{l:"This Week",v:`${thisWk}/4`,a:"#FF6B35"},{l:"Total",v:totalW,a:"#4ECDC4"},{l:"Streak",v:`${streak}w`,a:"#7B68EE"}].map((s,i)=>(<div key={i} style={{background:"#1A1D23",borderRadius:16,padding:"16px 12px",textAlign:"center",border:"1px solid #2A2D35"}}><div style={{fontSize:24,fontWeight:800,color:s.a}}>{s.v}</div><div style={{fontSize:11,color:"#6B7280",marginTop:4,fontWeight:600}}>{s.l}</div></div>))}</div>
-    <div style={{fontSize:13,fontWeight:700,color:"#8A8F98",letterSpacing:1.5,textTransform:"uppercase",marginBottom:12}}>Week {week}</div>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:24}}>{Object.entries(WD).map(([k,w])=>{const d=wLog[week]?.[k];return(<button key={k} onClick={()=>{setAWo(k);setTab("workout");setExpEx(null)}} style={{background:d?`linear-gradient(135deg,${w.color}18,${w.color}08)`:"#1A1D23",border:d?`1px solid ${w.color}40`:"1px solid #2A2D35",borderRadius:16,padding:"16px",textAlign:"left",cursor:"pointer"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"start"}}><span style={{fontSize:24}}>{w.icon}</span>{d&&<div style={{width:22,height:22,borderRadius:11,background:w.color,display:"flex",alignItems:"center",justifyContent:"center"}}><Ic.Chk/></div>}</div><div style={{fontSize:14,fontWeight:700,color:"#fff",marginTop:8}}>{w.title}</div><div style={{fontSize:11,color:"#6B7280",marginTop:2}}>{w.subtitle}</div></button>)})}</div>
-    {prof.cal>0&&<div style={{...S.card,marginBottom:20}}><div style={{display:"flex",gap:16,justifyContent:"center"}}><div style={{textAlign:"center"}}><div style={{fontSize:28,fontWeight:800,color:"#FF6B35"}}>{cal}</div><div style={{fontSize:11,color:"#6B7280"}}>Cal/day</div></div><div style={{width:1,background:"#2A2D35"}}/><div style={{textAlign:"center"}}><div style={{fontSize:28,fontWeight:800,color:"#4ECDC4"}}>{prot}g</div><div style={{fontSize:11,color:"#6B7280"}}>Protein</div></div></div></div>}
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}><button onClick={()=>setTab("nutrition")} style={{background:"linear-gradient(135deg,#FF6B3515,#FF6B3508)",border:"1px solid #FF6B3530",borderRadius:14,padding:"14px",cursor:"pointer",textAlign:"left"}}><div style={{fontSize:12,fontWeight:700,color:"#FF6B35"}}>⚡ Nutrition</div></button><button onClick={()=>setTab("guide")} style={{background:"linear-gradient(135deg,#7B68EE15,#7B68EE08)",border:"1px solid #7B68EE30",borderRadius:14,padding:"14px",cursor:"pointer",textAlign:"left"}}><div style={{fontSize:12,fontWeight:700,color:"#7B68EE"}}>📖 Guide</div></button></div>
-  </div>);
-
-  /* ─── WORKOUT DETAIL ─── */
-  const renderWoDetail=()=>{const exD=wo.exercises.filter(ex=>{const k=`${week}-${aWo}-${ex.id}`;const l=setLogs[k];return l&&Object.keys(l).length>=ex.sets}).length;const allD=exD===wo.exercises.length;const isDone=wLog[week]?.[aWo];return(<div style={{padding:"0 20px 100px"}}>
-    <div style={{padding:"24px 0 4px",display:"flex",alignItems:"center",gap:12}}><button onClick={()=>setAWo(null)} style={{background:"#1A1D23",border:"1px solid #2A2D35",borderRadius:10,width:36,height:36,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"#8A8F98",fontSize:16}}>←</button><div style={{flex:1}}><div style={{fontSize:11,fontWeight:700,letterSpacing:2,color:wo.color,textTransform:"uppercase"}}>{wo.day}</div><h2 style={{fontSize:22,fontWeight:800,color:"#fff",margin:"2px 0 0"}}>{wo.title}</h2></div><UBtn isM={isM} toggle={toggleU}/></div>
-    <div style={{fontSize:12,color:"#6B7280",marginBottom:16,paddingLeft:48}}>{wo.subtitle} · {exD}/{wo.exercises.length} · Wk {week}</div>
-    {restL>0&&<div style={{background:"linear-gradient(135deg,#FF6B3520,#FF6B3510)",border:"1px solid #FF6B3540",borderRadius:14,padding:"14px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}><span style={{fontSize:13,fontWeight:700,color:"#FF6B35"}}>⏱️ Rest</span><span style={{fontSize:22,fontWeight:900,color:"#fff",fontFamily:"monospace"}}>{Math.floor(restL/60)}:{(restL%60).toString().padStart(2,"0")}</span><button onClick={()=>setRestL(0)} style={{background:"#FF6B3530",border:"none",borderRadius:8,padding:"6px 12px",color:"#FF6B35",fontWeight:700,fontSize:11,cursor:"pointer"}}>Skip</button></div>}
-    {showEx&&<div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"#000000DD",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={()=>setShowEx(null)}><div style={{background:"#1A1D23",borderRadius:20,padding:"24px",maxWidth:380,width:"100%",border:`1px solid ${wo.color}30`}} onClick={e=>e.stopPropagation()}><div style={{width:"100%",height:160,marginBottom:16}}>{EI[showEx.name]?EI[showEx.name](wo.color):null}</div><h3 style={{fontSize:18,fontWeight:800,color:"#fff",margin:"0 0 6px"}}>{showEx.name}</h3><div style={{fontSize:12,color:wo.color,fontWeight:700,marginBottom:10}}>{showEx.muscles}</div><div style={{fontSize:13,color:"#C0C4CC",lineHeight:1.7,marginBottom:14}}><strong style={{color:"#FF6B35"}}>Tips: </strong>{showEx.tips}</div><button onClick={()=>setShowEx(null)} style={{width:"100%",background:wo.color,border:"none",borderRadius:12,padding:"12px",cursor:"pointer",fontSize:14,fontWeight:700,color:"#fff"}}>Got It</button></div></div>}
-    {wo.exercises.map((ex,idx)=>{const lk=`${week}-${aWo}-${ex.id}`;const ml=setLogs[lk]||{};const isExp=expEx===ex.id;const done=Object.keys(ml).length>=ex.sets;return(<div key={ex.id} style={{background:done?`${wo.color}08`:"#1A1D23",border:done?`1px solid ${wo.color}25`:"1px solid #2A2D35",borderRadius:16,marginBottom:10,overflow:"hidden"}}><div style={{display:"flex",alignItems:"center"}}><button onClick={()=>setExpEx(isExp?null:ex.id)} style={{flex:1,background:"none",border:"none",cursor:"pointer",padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}><div style={{width:30,height:30,borderRadius:10,background:done?wo.color:"#12141A",border:done?"none":"1px solid #2A2D35",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:800,color:done?"#fff":"#6B7280",flexShrink:0}}>{done?<Ic.Chk/>:idx+1}</div><div style={{flex:1,textAlign:"left"}}><div style={{fontSize:14,fontWeight:700,color:"#fff"}}>{ex.name}</div><div style={{fontSize:11,color:"#6B7280",marginTop:2}}>{ex.sets}s × {ex.reps}</div></div><div style={{color:"#4A4D55"}}>{isExp?<Ic.Up/>:<Ic.Dn/>}</div></button><button onClick={()=>setShowEx(ex)} style={{background:wo.color+"18",border:"none",borderRadius:10,width:34,height:34,marginRight:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,color:wo.color}}><Ic.Eye/></button></div>
-      {isExp&&<div style={{padding:"0 16px 16px"}}><div style={{width:"100%",height:90,marginBottom:10,background:"#12141A",borderRadius:12,overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center"}}>{EI[ex.name]?EI[ex.name](wo.color):null}</div><div style={{fontSize:12,color:"#C0C4CC",marginBottom:10,padding:"10px 14px",background:"#12141A",borderRadius:10,lineHeight:1.6}}>💡 {ex.tips}</div><div style={{fontSize:10,color:"#E84855",fontWeight:700,marginBottom:8}}>⚠️ EVERY SET → FAILURE</div>
-        <div style={{display:"flex",gap:4,marginBottom:5}}><div style={{width:28}}/><div style={{flex:1,fontSize:10,color:"#6B7280",fontWeight:700,textAlign:"center"}}>{isM?"KG":"LBS"}</div><div style={{flex:1,fontSize:10,color:"#6B7280",fontWeight:700,textAlign:"center"}}>REPS</div><div style={{width:32}}/></div>
-        {Array.from({length:ex.sets},(_,si)=>{const sn=si+1;const lg=ml[sn];return(<div key={si} style={{display:"flex",gap:6,alignItems:"center",marginBottom:4}}><div style={{width:28,height:28,borderRadius:8,fontSize:11,fontWeight:800,background:lg?wo.color:"#12141A",border:lg?"none":"1px solid #2A2D35",color:lg?"#fff":"#4A4D55",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{sn}</div><input type="number" min="0" placeholder={isM?"kg":"lbs"} value={lg?.weight||""} onChange={e=>{const v=Math.max(0,e.target.value);update("setLogs",p=>({...p,[lk]:{...p[lk],[sn]:{...(p[lk]?.[sn]||{}),weight:v,unit:isM?"kg":"lbs"}}}))}} style={{flex:1,background:"#12141A",border:"1px solid #2A2D35",borderRadius:8,padding:"8px 10px",color:"#fff",fontSize:14,fontWeight:600,outline:"none",fontFamily:"inherit",minWidth:0}}/><input type="number" min="0" placeholder="reps" value={lg?.reps||""} onChange={e=>{const v=Math.max(0,e.target.value);update("setLogs",p=>({...p,[lk]:{...p[lk],[sn]:{...(p[lk]?.[sn]||{}),reps:v}}}))}} style={{flex:1,background:"#12141A",border:"1px solid #2A2D35",borderRadius:8,padding:"8px 10px",color:"#fff",fontSize:14,fontWeight:600,outline:"none",fontFamily:"inherit",minWidth:0}}/><button onClick={()=>setRestL(rSec(ex.rest))} style={{background:"#FF6B3518",border:"1px solid #FF6B3530",borderRadius:8,padding:"8px",cursor:"pointer",color:"#FF6B35",flexShrink:0,display:"flex",alignItems:"center"}}><Ic.Clk/></button></div>)})}
-      </div>}</div>)})}
-    {isDone?<div style={{textAlign:"center",padding:"16px"}}><div style={{color:wo.color,fontSize:15,fontWeight:800,marginBottom:8}}>✅ Completed!</div><button onClick={()=>update("wLog",p=>{const n={...p};if(n[week]){const w={...n[week]};delete w[aWo];n[week]=w;}return n})} style={{background:"none",border:"1px solid #2A2D35",borderRadius:10,padding:"8px 16px",cursor:"pointer",color:"#6B7280",fontSize:12,fontWeight:600,display:"inline-flex",alignItems:"center",gap:5}}><Ic.Undo/> Undo</button></div>:<button onClick={()=>allD&&update("wLog",p=>({...p,[week]:{...(p[week]||{}),[aWo]:true}}))} style={{width:"100%",background:allD?`linear-gradient(135deg,${wo.color},${wo.color}CC)`:"#2A2D35",border:"none",borderRadius:14,padding:"16px",cursor:allD?"pointer":"default",fontSize:14,fontWeight:800,color:"#fff",marginTop:12,opacity:allD?1:0.5}}>{allD?"✅ Complete Workout":`Log all exercises (${exD}/${wo.exercises.length})`}</button>}
-  </div>)};
-
-  /* ─── WORKOUT LIST ─── */
-  const renderWoList=()=>(<div style={{padding:"0 20px 100px"}}><div style={{padding:"32px 0 8px"}}><div style={{fontSize:13,fontWeight:600,letterSpacing:3,color:"#FF6B35",textTransform:"uppercase",marginBottom:8}}>Part 2</div><h1 style={{fontSize:28,fontWeight:800,color:"#fff",margin:0}}>Workouts</h1></div>
-    <div style={{...S.card,marginTop:20,marginBottom:20}}>{["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map((d,i)=>{const wK=i===0?"upperA":i===1?"lowerA":i===3?"upperB":i===4?"lowerB":null;const w=wK?WD[wK]:null;return(<div key={d} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:i<6?"1px solid #1E2028":"none"}}><div style={{width:36,fontSize:12,fontWeight:700,color:w?"#8A8F98":"#3A3D45"}}>{d}</div>{w?<button onClick={()=>{setAWo(wK);setExpEx(null)}} style={{flex:1,display:"flex",alignItems:"center",gap:10,background:"none",border:"none",cursor:"pointer",padding:0}}><div style={{width:36,height:36,borderRadius:10,background:`${w.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>{w.icon}</div><div style={{textAlign:"left"}}><div style={{fontSize:14,fontWeight:700,color:"#fff"}}>{w.title}</div><div style={{fontSize:11,color:"#6B7280"}}>{w.subtitle}</div></div></button>:<div style={{flex:1,fontSize:13,color:"#3A3D45",fontWeight:600}}>Rest 🛋️</div>}</div>)})}</div>
-    <div style={{background:"linear-gradient(135deg,#E8485512,#E8485508)",border:"1px solid #E8485530",borderRadius:16,padding:"18px 20px"}}><div style={{fontSize:14,fontWeight:800,color:"#E84855",marginBottom:8}}>⚠️ NON-NEGOTIABLE</div><div style={{fontSize:13,color:"#C0C4CC",lineHeight:1.7}}>EVERY SET → <strong style={{color:"#fff"}}>FAILURE</strong></div></div>
-  </div>);
-
-  /* ─── NUTRITION ─── */
-  const renderNutr=()=>(<div style={{padding:"0 20px 100px"}}>
-    <div style={{padding:"32px 0 8px",display:"flex",justifyContent:"space-between",alignItems:"start"}}><div><div style={{fontSize:13,fontWeight:600,letterSpacing:3,color:"#FF6B35",textTransform:"uppercase",marginBottom:8}}>Nutrition</div><h1 style={{fontSize:28,fontWeight:800,color:"#fff",margin:0}}>Fuel Your Gains</h1></div><UBtn isM={isM} toggle={toggleU}/></div>
-    <div style={{...S.card,marginTop:20,marginBottom:16}}><label style={{fontSize:12,fontWeight:700,color:"#8A8F98",textTransform:"uppercase"}}>Weight ({isM?"kg":"lbs"})</label><div style={{display:"flex",alignItems:"center",gap:12,marginTop:10}}><input type="number" min="0" value={wInput} onChange={e=>update("wInput",String(Math.max(0,e.target.value)))} placeholder={isM?"80":"176"} style={{flex:1,background:"#12141A",border:"1px solid #2A2D35",borderRadius:12,padding:"14px 16px",color:"#fff",fontSize:20,fontWeight:700,outline:"none",fontFamily:"inherit"}}/>{wInput&&<div style={{background:"#4ECDC415",color:"#4ECDC4",padding:"8px 14px",borderRadius:10,fontSize:13,fontWeight:700}}>= {isM?`${Math.round(wLbs)}lbs`:`${Math.round(wKg*10)/10}kg`}</div>}</div></div>
-    <div style={{...S.card,marginBottom:16}}><label style={{fontSize:12,fontWeight:700,color:"#8A8F98",textTransform:"uppercase"}}>Goal</label><div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginTop:10}}>{[["lose","Lose","🔻"],["maintain","Keep","⚖️"],["gain","Gain","💪"]].map(([k,l,e])=>(<button key={k} onClick={()=>update("prof",p=>({...p,goal:k,mult:gm[k][1]}))} style={{background:prof.goal===k?"#FF6B3518":"#12141A",border:prof.goal===k?"2px solid #FF6B35":"1px solid #2A2D35",borderRadius:12,padding:"14px 8px",cursor:"pointer",textAlign:"center"}}><div style={{fontSize:22}}>{e}</div><div style={{fontSize:12,fontWeight:700,color:prof.goal===k?"#FF6B35":"#8A8F98",marginTop:4}}>{l}</div></button>))}</div></div>
-    <div style={{...S.card,marginBottom:16}}><label style={{fontSize:12,fontWeight:700,color:"#8A8F98",textTransform:"uppercase"}}>Multiplier</label><div style={{display:"flex",gap:8,marginTop:10}}>{gm[prof.goal].map(m=>(<button key={m} onClick={()=>update("prof",p=>({...p,mult:m}))} style={{flex:1,background:prof.mult===m?"#FF6B35":"#12141A",border:prof.mult===m?"none":"1px solid #2A2D35",borderRadius:12,padding:"14px",cursor:"pointer",fontSize:18,fontWeight:800,color:prof.mult===m?"#fff":"#6B7280"}}>×{m}</button>))}</div></div>
-    {wN>0&&<div style={{background:"linear-gradient(135deg,#FF6B3512,#4ECDC410)",border:"1px solid #FF6B3525",borderRadius:20,padding:"24px",marginBottom:20}}><div style={{display:"flex",gap:20,justifyContent:"center",marginBottom:12}}><div style={{textAlign:"center"}}><div style={{fontSize:38,fontWeight:900,color:"#FF6B35",lineHeight:1}}>{cal}</div><div style={{fontSize:12,color:"#8A8F98",marginTop:4}}>Calories</div></div><div style={{width:1,background:"#2A2D3580"}}/><div style={{textAlign:"center"}}><div style={{fontSize:38,fontWeight:900,color:"#4ECDC4",lineHeight:1}}>{prot}g</div><div style={{fontSize:12,color:"#8A8F98",marginTop:4}}>Protein</div></div></div><div style={{background:"#12141A80",borderRadius:12,padding:"12px 16px",fontSize:12,color:"#8A8F98"}}>{isM?`${wInput}kg × 2.2 = ${Math.round(wLbs)}lbs`:`${wInput}lbs`} × {prof.mult} = {cal} cal | Protein: {Math.round(wLbs)} × 1 = {prot}g</div></div>}
-    <div style={{fontSize:13,fontWeight:700,color:"#8A8F98",textTransform:"uppercase",marginBottom:12}}>Meal Ideas</div>
-    <div style={{display:"flex",gap:6,marginBottom:14,overflowX:"auto"}}>{["breakfast","lunch","dinner","snack"].map(t=>(<button key={t} onClick={()=>setMTab(t)} style={{padding:"8px 16px",borderRadius:10,fontSize:12,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap",background:mTab===t?"#FF6B3520":"#1A1D23",border:mTab===t?"1px solid #FF6B35":"1px solid #2A2D35",color:mTab===t?"#FF6B35":"#6B7280",textTransform:"capitalize"}}>{t}</button>))}</div>
-    {MEALS[mTab].map((m,mi)=>{const t=mealT(m.items);return(<div key={mi} style={{...S.card,padding:"16px",marginBottom:10}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}><span style={{fontSize:15,fontWeight:700,color:"#fff"}}>{m.emoji} {m.name}</span><span style={{fontSize:12,fontWeight:700,color:"#FF6B35"}}>{t.cal}cal</span></div><div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>{m.items.map((n,ii)=>{const f=FOODS.find(x=>x.name===n);return f?<div key={ii} style={{background:"#12141A",borderRadius:8,padding:"4px 10px",fontSize:11,color:"#8A8F98"}}>{f.emoji} {f.name} <span style={{color:"#4ECDC4"}}>({f.protein}gP)</span></div>:null})}</div><div style={{fontSize:11,color:"#6B7280"}}>💪 {t.protein}gP · 🍞 {t.carbs}gC · 🧈 {Math.round(t.fat)}gF</div></div>)})}
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:14,marginBottom:12}}><div style={{fontSize:13,fontWeight:700,color:"#8A8F98",textTransform:"uppercase"}}>Food Log</div><button onClick={()=>setShowDb(!showDb)} style={{background:"#FF6B3520",border:"1px solid #FF6B3540",borderRadius:10,padding:"6px 14px",cursor:"pointer",fontSize:11,fontWeight:700,color:"#FF6B35"}}>{showDb?"Close":"+ Add"}</button></div>
-    {showDb&&<div style={{...S.card,padding:"16px",marginBottom:14}}><div style={{display:"flex",gap:6,marginBottom:10,overflowX:"auto"}}>{[{k:"all",l:"All"},{k:"protein",l:"🥩"},{k:"carb",l:"🍚"},{k:"fat",l:"🥑"},{k:"veggie",l:"🥦"}].map(f=>(<button key={f.k} onClick={()=>setFFilt(f.k)} style={{padding:"5px 12px",borderRadius:8,fontSize:11,fontWeight:600,cursor:"pointer",background:fFilt===f.k?"#4ECDC420":"#12141A",border:fFilt===f.k?"1px solid #4ECDC4":"1px solid #2A2D35",color:fFilt===f.k?"#4ECDC4":"#6B7280"}}>{f.l}</button>))}</div>{FOODS.filter(f=>fFilt==="all"||f.cat===fFilt).map((f,fi)=>(<button key={fi} onClick={()=>update("addedF",p=>[...p,{...f,qty:1}])} style={{width:"100%",display:"flex",alignItems:"center",gap:10,background:"none",border:"none",borderBottom:"1px solid #1E2028",padding:"10px 0",cursor:"pointer",textAlign:"left"}}><span style={{fontSize:18}}>{f.emoji}</span><div style={{flex:1}}><div style={{fontSize:13,fontWeight:600,color:"#fff"}}>{f.name}</div><div style={{fontSize:11,color:"#6B7280"}}>{f.cal}cal · {f.protein}gP</div></div><div style={{color:"#4ECDC4",fontSize:18,fontWeight:700}}>+</div></button>))}</div>}
-    {addedF.length>0&&<div style={{...S.card,padding:"16px",marginBottom:14}}>{addedF.map((f,fi)=>(<div key={fi} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:fi<addedF.length-1?"1px solid #1E2028":"none"}}><span style={{fontSize:16}}>{f.emoji}</span><div style={{flex:1}}><div style={{fontSize:13,fontWeight:600,color:"#fff"}}>{f.name}</div><div style={{fontSize:11,color:"#6B7280"}}>{f.cal*f.qty}cal · {Math.round(f.protein*f.qty)}gP</div></div><div style={{display:"flex",alignItems:"center",gap:3}}><button onClick={()=>update("addedF",p=>p.map((x,i)=>i===fi?{...x,qty:Math.max(1,x.qty-1)}:x))} style={{width:24,height:24,borderRadius:6,background:"#12141A",border:"1px solid #2A2D35",color:"#8A8F98",cursor:"pointer",fontSize:14}}>−</button><span style={{fontSize:13,fontWeight:700,color:"#fff",minWidth:18,textAlign:"center"}}>{f.qty}</span><button onClick={()=>update("addedF",p=>p.map((x,i)=>i===fi?{...x,qty:x.qty+1}:x))} style={{width:24,height:24,borderRadius:6,background:"#12141A",border:"1px solid #2A2D35",color:"#8A8F98",cursor:"pointer",fontSize:14}}>+</button></div><button onClick={()=>update("addedF",p=>p.filter((_,i)=>i!==fi))} style={{background:"#E8485520",border:"none",borderRadius:8,width:28,height:28,cursor:"pointer",color:"#E84855",fontSize:14,fontWeight:700}}>×</button></div>))}
-      <div style={{marginTop:12,padding:"12px 16px",background:"linear-gradient(135deg,#FF6B3510,#4ECDC408)",borderRadius:10,border:"1px solid #FF6B3520"}}><div style={{display:"flex",justifyContent:"space-between",fontSize:12,fontWeight:700,marginBottom:6}}><span style={{color:"#8A8F98"}}>Total</span><span style={{color:cal>0&&addT.cal>=cal?"#4ECDC4":"#FF6B35"}}>{Math.round(addT.cal)} / {cal||"—"} cal</span></div>{cal>0&&<div style={{background:"#12141A",borderRadius:6,height:8,overflow:"hidden",marginBottom:8}}><div style={{height:"100%",width:`${Math.min(100,addT.cal/cal*100)}%`,background:"linear-gradient(90deg,#FF6B35,#4ECDC4)",borderRadius:6}}/></div>}<div style={{display:"flex",justifyContent:"space-around",fontSize:11}}><span style={{color:"#4ECDC4"}}>💪{Math.round(addT.protein)}/{prot}gP</span><span style={{color:"#6B7280"}}>🍞{Math.round(addT.carbs)}gC</span><span style={{color:"#6B7280"}}>🧈{Math.round(addT.fat)}gF</span></div></div>
-      <button onClick={()=>update("addedF",[])} style={{marginTop:10,width:"100%",background:"#1E2028",border:"1px solid #2A2D35",borderRadius:10,padding:"10px",cursor:"pointer",color:"#6B7280",fontSize:12,fontWeight:600}}>Clear Log</button>
-    </div>}
-  </div>);
-
-  /* ─── PROGRESS ─── */
-  const renderProg=()=>(<div style={{padding:"0 20px 100px"}}><div style={{padding:"32px 0 8px"}}><div style={{fontSize:13,fontWeight:600,letterSpacing:3,color:"#4ECDC4",textTransform:"uppercase",marginBottom:8}}>Track</div><h1 style={{fontSize:28,fontWeight:800,color:"#fff",margin:0}}>Progress</h1></div>
-    <div style={{...S.card,marginTop:20,marginBottom:20}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}><span style={{fontSize:12,fontWeight:700,color:"#8A8F98",textTransform:"uppercase"}}>Week</span><div style={{display:"flex",gap:6}}><button onClick={()=>update("week",w=>Math.max(1,w-1))} style={{width:32,height:32,borderRadius:8,background:"#12141A",border:"1px solid #2A2D35",color:"#8A8F98",cursor:"pointer",fontSize:16}}>‹</button><div style={{width:48,height:32,borderRadius:8,background:"#FF6B3518",border:"1px solid #FF6B3530",display:"flex",alignItems:"center",justifyContent:"center",color:"#FF6B35",fontSize:16,fontWeight:800}}>{week}</div><button onClick={()=>update("week",w=>Math.min(12,w+1))} style={{width:32,height:32,borderRadius:8,background:"#12141A",border:"1px solid #2A2D35",color:"#8A8F98",cursor:"pointer",fontSize:16}}>›</button></div></div><div style={{background:"#12141A",borderRadius:8,height:8,overflow:"hidden"}}><div style={{height:"100%",width:`${(week/12)*100}%`,background:"linear-gradient(90deg,#FF6B35,#4ECDC4)",borderRadius:8}}/></div></div>
-    <div style={{marginBottom:20}}>{PHASES.map((p,i)=>{const a=(week<=2&&i===0)||(week>=3&&week<=6&&i===1)||(week>=7&&week<=10&&i===2)||(week>=11&&i===3);return(<div key={i} style={{display:"flex",gap:14,alignItems:"center",background:a?`${p.color}10`:"transparent",border:a?`1px solid ${p.color}30`:"1px solid transparent",borderRadius:14,padding:"14px 16px",marginBottom:8}}><div style={{width:40,height:40,borderRadius:12,background:a?p.color:"#1A1D23",border:a?"none":"1px solid #2A2D35",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:900,color:"#fff",flexShrink:0}}>{i+1}</div><div style={{flex:1}}><div style={{fontSize:15,fontWeight:700,color:a?"#fff":"#6B7280"}}>{p.label} <span style={{fontSize:11,color:a?p.color:"#4A4D55",fontWeight:600}}>Wk {p.weeks}</span></div><div style={{fontSize:12,color:"#6B7280",marginTop:2}}>{p.desc}</div></div></div>)})}</div>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:20}}>{Array.from({length:12},(_,i)=>{const w=i+1;const d=wLog[w]?Object.keys(wLog[w]).length:0;const c=w===week;const p=getPhase(w);return(<div key={w} style={{background:c?`${p.color}15`:"#1A1D23",border:c?`2px solid ${p.color}`:"1px solid #2A2D35",borderRadius:12,padding:"12px 8px",textAlign:"center"}}><div style={{fontSize:10,color:"#6B7280",fontWeight:600,marginBottom:4}}>WK{w}</div><div style={{display:"flex",gap:3,justifyContent:"center"}}>{[0,1,2,3].map(x=>(<div key={x} style={{width:8,height:8,borderRadius:4,background:x<d?p.color:"#2A2D35"}}/>))}</div></div>)})}</div>
-    <div style={S.card}><div style={{fontSize:12,fontWeight:700,color:"#FF6B35",textTransform:"uppercase",marginBottom:10}}>Bench Example</div><div style={{fontSize:13,color:"#C0C4CC",lineHeight:1.8}}>{isM?<span>Wk3→100kg×8 · Wk6→100kg×10 · Wk7→105kg×6 · Wk11→73kg×12</span>:<span>Wk3→220lbs×8 · Wk6→220lbs×10 · Wk7→231lbs×6 · Wk11→161lbs×12</span>}</div></div>
-  </div>);
-
-  /* ─── GUIDE ─── */
-  const renderGuide=()=>(<div style={{padding:"0 20px 100px"}}><div style={{padding:"32px 0 8px"}}><div style={{fontSize:13,fontWeight:600,letterSpacing:3,color:"#7B68EE",textTransform:"uppercase",marginBottom:8}}>Guide</div><h1 style={{fontSize:28,fontWeight:800,color:"#fff",margin:0}}>Program Guide</h1></div>
-    <div style={{...S.card,marginTop:20,marginBottom:20}}><div style={{marginBottom:10}}><label style={{fontSize:11,color:"#6B7280",fontWeight:600}}>Name</label><input value={prof.name||""} onChange={e=>update("prof",p=>({...p,name:e.target.value}))} placeholder="Your name" style={{width:"100%",background:"#12141A",border:"1px solid #2A2D35",borderRadius:10,padding:"10px 14px",color:"#fff",fontSize:14,outline:"none",marginTop:4,fontFamily:"inherit",boxSizing:"border-box"}}/></div><div style={{marginBottom:10}}><label style={{fontSize:11,color:"#6B7280",fontWeight:600}}>Start</label><input type="date" value={prof.startDate||""} onChange={e=>update("prof",p=>({...p,startDate:e.target.value}))} style={{width:"100%",background:"#12141A",border:"1px solid #2A2D35",borderRadius:10,padding:"10px 14px",color:"#fff",fontSize:14,outline:"none",marginTop:4,fontFamily:"inherit",boxSizing:"border-box"}}/></div><div><label style={{fontSize:11,color:"#6B7280",fontWeight:600}}>Notes</label><textarea value={prof.notes||""} onChange={e=>update("prof",p=>({...p,notes:e.target.value}))} placeholder="Goals..." style={{width:"100%",background:"#12141A",border:"1px solid #2A2D35",borderRadius:10,padding:"10px 14px",color:"#fff",fontSize:13,outline:"none",marginTop:4,fontFamily:"inherit",minHeight:60,resize:"vertical",boxSizing:"border-box"}}/></div></div>
-    <div style={{background:"linear-gradient(135deg,#FF6B3510,#E8485510)",border:"1px solid #FF6B3525",borderRadius:16,padding:"20px",marginBottom:20}}><div style={{fontSize:13,color:"#C0C4CC",lineHeight:1.8}}>12 weeks of average programming executed consistently beats perfect programming attempted inconsistently.</div><div style={{marginTop:14,padding:"12px 16px",background:"#12141A80",borderRadius:10,fontSize:13,fontWeight:700,color:"#E84855",textAlign:"center"}}>DON'T THINK. JUST EXECUTE.</div></div>
-    <div style={{...S.card,marginBottom:20}}>{[["📅","4 days/week"],["📋","Exact exercises"],["🥗","Nutrition formula"],["💀","Every set→FAILURE"],["🔒","Nothing changes"]].map(([e,r],i)=>(<div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:i<4?"1px solid #1E2028":"none"}}><span style={{fontSize:20}}>{e}</span><span style={{fontSize:14,color:"#E0E0E0",fontWeight:600}}>{r}</span></div>))}</div>
-    {FAQS.map((f,i)=>(<div key={i} style={{background:"#1A1D23",borderRadius:14,border:openFaq===i?"1px solid #7B68EE30":"1px solid #2A2D35",marginBottom:8,overflow:"hidden"}}><button onClick={()=>setOpenFaq(openFaq===i?null:i)} style={{width:"100%",background:"none",border:"none",cursor:"pointer",padding:"14px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}><span style={{fontSize:14,fontWeight:700,color:"#fff",textAlign:"left"}}>{f.q}</span><span style={{color:"#4A4D55",flexShrink:0}}>{openFaq===i?<Ic.Up/>:<Ic.Dn/>}</span></button>{openFaq===i&&<div style={{padding:"0 16px 14px",fontSize:13,color:"#8A8F98",lineHeight:1.7}}>{f.a}</div>}</div>))}
-  </div>);
-
-  /* ─── RENDER ─── */
-  const navItems=[{id:"home",l:"Home",I:Ic.Home},{id:"workout",l:"Workout",I:Ic.Dum},{id:"nutrition",l:"Food",I:Ic.App},{id:"progress",l:"Progress",I:Ic.Bar},{id:"guide",l:"Guide",I:Ic.Inf}];
-  return(<div style={{maxWidth:430,margin:"0 auto",minHeight:"100vh",background:"#12141A",position:"relative"}}>
-    <div style={{overflowY:"auto",height:"100vh",paddingBottom:80}}>
-      {tab==="home"&&renderHome()}
-      {tab==="workout"&&(aWo&&wo?renderWoDetail():renderWoList())}
-      {tab==="nutrition"&&renderNutr()}
-      {tab==="progress"&&renderProg()}
-      {tab==="guide"&&renderGuide()}
-    </div>
-    {showInstall&&<div className="install-banner"><div><div style={{fontSize:14,fontWeight:800,color:"#fff"}}>Install this app</div><div style={{fontSize:12,color:"#ffffffAA",marginTop:2}}>Add to home screen for full experience</div></div><div style={{display:"flex",gap:8}}><button onClick={doInstall} style={{background:"#fff",border:"none",borderRadius:10,padding:"8px 16px",fontSize:13,fontWeight:700,color:"#FF6B35",cursor:"pointer"}}>Install</button><button onClick={()=>setShowInstall(false)} style={{background:"none",border:"1px solid #ffffff40",borderRadius:10,padding:"8px 12px",color:"#fff",cursor:"pointer",fontSize:13}}>Later</button></div></div>}
-    <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:"linear-gradient(180deg,#12141AE0,#12141A)",backdropFilter:"blur(20px)",borderTop:"1px solid #1E2028",padding:"8px 8px calc(8px + env(safe-area-inset-bottom,0px))",display:"flex",justifyContent:"space-around",zIndex:100}}>
-      {navItems.map(({id,l,I})=>{const a=tab===id;return(<button key={id} onClick={()=>{setTab(id);if(id!=="workout")setAWo(null)}} style={{background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"6px 12px",borderRadius:12,minWidth:50,color:a?"#FF6B35":"#4A4D55"}}><I/><span style={{fontSize:10,fontWeight:700}}>{l}</span>{a&&<div style={{width:4,height:4,borderRadius:2,background:"#FF6B35",marginTop:-1}}/>}</button>)})}
-    </div>
-  </div>);
+  return { data, update, ready };
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
-</script>
-<script>
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
-</script>
+/* ═══════════════════════════════════════════════
+   ICONS
+   ═══════════════════════════════════════════════ */
+const Ic = {
+  Home:()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+  Dum:()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6.5 6.5h11M6.5 17.5h11M2 12h2M20 12h2M4 8v8M20 8v8M6 6v12M18 6v12"/></svg>,
+  App:()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C9 2 7 4 7 4s-3 2-3 7 3 9 8 9 8-4 8-9-3-7-3-7-2-2-5-2z"/><path d="M12 2c1-1 3-1 3-1"/></svg>,
+  Bar:()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+  Inf:()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>,
+  Chk:()=><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  Dn:()=><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>,
+  Up:()=><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="18 15 12 9 6 15"/></svg>,
+  Clk:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  Tgt:()=><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
+  Fire:()=><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22c-4.97 0-9-2.69-9-6v-1c0-3 2-5.5 4-7 .5 2.5 2 3 3 3-1-3 1-7 5-9 0 3 1.5 5 3 6 1-1 2-2.5 2-5 2 1.5 4 4 4 7v1c0 3.31-4.03 6-9 6z"/></svg>,
+  Swap:()=><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>,
+  Eye:()=><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/></svg>,
+  Undo:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 105.64-11.36L1 10"/></svg>,
+};
+
+function UnitBtn({isM, toggle}){ return <button onClick={toggle} style={{display:"flex",alignItems:"center",gap:5,background:"#1A1D23",border:"1px solid #2A2D35",borderRadius:10,padding:"6px 12px",cursor:"pointer"}}><Ic.Swap/><span style={{fontSize:11,fontWeight:700,color:isM?"#4ECDC4":"#FF6B35"}}>{isM?"METRIC":"IMPERIAL"}</span></button> }
+
+/* ═══════════════════════════════════════════════
+   MAIN APP
+   FIX #2: All state lifted to App, no components
+   defined inside render — prevents unmount/remount
+   ═══════════════════════════════════════════════ */
+function App() {
+  const { data, update, ready } = usePersistedState();
+  const { prof, week, wLog, isM, setLogs, addedF, wInput, sched } = data;
+
+  const [tab, setTab] = useState("home");
+  const [aWo, setAWo] = useState(null);
+  const [expEx, setExpEx] = useState(null);
+  const [restL, setRestL] = useState(0);
+  const [showEx, setShowEx] = useState(null);
+  const [mTab, setMTab] = useState("breakfast");
+  const [showDb, setShowDb] = useState(false);
+  const [fFilt, setFFilt] = useState("all");
+  const [openFaq, setOpenFaq] = useState(null);
+  const [editingSched, setEditingSched] = useState(false);
+
+  // Helper: find which day a workout is assigned to
+  const dayForWo = (woKey) => { const entry = Object.entries(sched||{}).find(([_,v])=>v===woKey); return entry ? DAYS[parseInt(entry[0])] : "—"; };
+
+  // FIX #8: timer persists because state is in App, not a child component
+  useEffect(() => { if(restL>0){const t=setTimeout(()=>setRestL(r=>r-1),1000);return()=>clearTimeout(t)} }, [restL]);
+
+  // Derived
+  const phase = getPhase(week);
+  const thisWk = wLog[week] ? Object.keys(wLog[week]).length : 0;
+  const totalW = Object.values(wLog).reduce((s,w) => s + Object.keys(w).length, 0);
+  const streak = (() => { let s=0; for(let w=week;w>=1;w--){if(wLog[w]&&Object.keys(wLog[w]).length>0)s++;else break;} return s; })();
+
+  // FIX #3 & #4: Weight conversion — input always stored in current unit's value
+  const wInputNum = parseFloat(wInput) || 0;
+  const weightKg = isM ? wInputNum : lbToKg(wInputNum);
+  const weightLbs = isM ? kgToLb(wInputNum) : wInputNum;
+  const calories = Math.round(weightLbs * prof.mult);
+  const proteinG = Math.round(weightLbs);
+
+  // FIX #3: When toggling units, convert the input value
+  const toggleUnit = () => {
+    const curVal = parseFloat(wInput);
+    if (curVal) {
+      const converted = isM ? kgToLb(curVal) : lbToKg(curVal);
+      update("wInput", String(Math.round(converted * 10) / 10));
+    }
+    update("isM", !isM);
+  };
+
+  // Sync profile whenever nutrition inputs change
+  useEffect(() => {
+    if (wInputNum > 0) {
+      update("prof", p => ({...p, weightKg: Math.round(weightKg*10)/10, cal: calories, prot: proteinG, wLbs: Math.round(weightLbs)}));
+    }
+  }, [wInput, isM, prof.mult, prof.goal]);
+
+  const gm = {lose:[10,11,12],maintain:[13,14,15],gain:[16,17,18]};
+  const addT = addedF.reduce((t,f) => ({cal:t.cal+f.cal*f.qty,protein:t.protein+f.protein*f.qty,carbs:t.carbs+f.carbs*f.qty,fat:t.fat+f.fat*f.qty}),{cal:0,protein:0,carbs:0,fat:0});
+  const wo = aWo ? WD[aWo] : null;
+
+  if (!ready) return (
+    <div style={{maxWidth:430,margin:"0 auto",height:"100vh",background:"#12141A",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:16}}>
+      <div style={{width:40,height:40,border:"3px solid #2A2D35",borderTopColor:"#FF6B35",borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+      <div style={{color:"#6B7280",fontSize:13,fontWeight:600}}>Loading your program...</div>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
+
+  /* ─── RENDER HELPERS ─── */
+  const SectionTitle = ({color, pre, title}) => (
+    <div style={{padding:"32px 0 8px"}}><div style={{fontSize:13,fontWeight:600,letterSpacing:3,color,textTransform:"uppercase",marginBottom:8}}>{pre}</div><h1 style={{fontSize:28,fontWeight:800,color:"#fff",margin:0}}>{title}</h1></div>
+  );
+
+  const navItems=[{id:"home",l:"Home",I:Ic.Home},{id:"workout",l:"Workout",I:Ic.Dum},{id:"nutrition",l:"Nutrition",I:Ic.App},{id:"progress",l:"Progress",I:Ic.Bar},{id:"guide",l:"Guide",I:Ic.Inf}];
+  const S = { card:{background:"#1A1D23",borderRadius:16,padding:"20px",border:"1px solid #2A2D35"}, input:{background:"#12141A",border:"1px solid #2A2D35",borderRadius:10,padding:"10px 14px",color:"#fff",fontSize:14,outline:"none",fontFamily:"inherit",boxSizing:"border-box",width:"100%"} };
+
+  /* ═════════════════════ HOME ═════════════════════ */
+  const renderHome = () => (
+    <div style={{padding:"0 20px 100px"}}>
+      <div style={{padding:"32px 0 24px",display:"flex",justifyContent:"space-between",alignItems:"start"}}>
+        <div>
+          <div style={{fontSize:13,fontWeight:600,letterSpacing:3,color:"#FF6B35",textTransform:"uppercase",marginBottom:8}}>12-Week Execution</div>
+          <h1 style={{fontSize:30,fontWeight:800,color:"#fff",margin:0,lineHeight:1.1}}>{prof.name?`Let's go, ${prof.name.split(" ")[0]}`:"Dashboard"}</h1>
+          <p style={{color:"#8A8F98",fontSize:14,marginTop:8}}>Week {week}/12 · {phase.label} Phase</p>
+        </div>
+        <UnitBtn isM={isM} toggle={toggleUnit}/>
+      </div>
+      <div style={{background:`linear-gradient(135deg,${phase.color}15,${phase.color}08)`,border:`1px solid ${phase.color}30`,borderRadius:16,padding:"16px 20px",marginBottom:20}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div><div style={{fontSize:11,fontWeight:700,letterSpacing:2,color:phase.color,textTransform:"uppercase"}}>Current Phase</div><div style={{fontSize:18,fontWeight:700,color:"#fff",marginTop:4}}>{phase.label}</div><div style={{fontSize:13,color:"#8A8F98",marginTop:2}}>{phase.desc}</div></div><div style={{fontSize:36}}>{phase===PHASES[0]?"📐":phase===PHASES[1]?"📈":phase===PHASES[2]?"🔥":"🧘"}</div></div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:24}}>
+        {[{l:"This Week",v:`${thisWk}/4`,a:"#FF6B35"},{l:"Total Done",v:totalW,a:"#4ECDC4"},{l:"Streak",v:`${streak}w`,a:"#7B68EE"}].map((s,i)=>(<div key={i} style={{background:"#1A1D23",borderRadius:16,padding:"16px 12px",textAlign:"center",border:"1px solid #2A2D35"}}><div style={{fontSize:24,fontWeight:800,color:s.a}}>{s.v}</div><div style={{fontSize:11,color:"#6B7280",marginTop:4,fontWeight:600}}>{s.l}</div></div>))}
+      </div>
+      <div style={{fontSize:13,fontWeight:700,color:"#8A8F98",letterSpacing:1.5,textTransform:"uppercase",marginBottom:12}}>Week {week} Workouts</div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:24}}>
+        {Object.entries(WD).map(([k,w])=>{const d=wLog[week]?.[k];return(<button key={k} onClick={()=>{setAWo(k);setTab("workout");setExpEx(null)}} style={{background:d?`linear-gradient(135deg,${w.color}18,${w.color}08)`:"#1A1D23",border:d?`1px solid ${w.color}40`:"1px solid #2A2D35",borderRadius:16,padding:"16px",textAlign:"left",cursor:"pointer"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"start"}}><span style={{fontSize:24}}>{w.icon}</span>{d&&<div style={{width:22,height:22,borderRadius:11,background:w.color,display:"flex",alignItems:"center",justifyContent:"center"}}><Ic.Chk/></div>}</div><div style={{fontSize:14,fontWeight:700,color:"#fff",marginTop:8}}>{w.title}</div><div style={{fontSize:11,color:"#6B7280",marginTop:2}}>{w.subtitle} · {dayForWo(k)}</div></button>)})}
+      </div>
+      <div style={{marginBottom:24}}><div style={{fontSize:13,fontWeight:700,color:"#8A8F98",letterSpacing:1.5,textTransform:"uppercase",marginBottom:12}}>12-Week Timeline</div>
+        <div style={{display:"flex",gap:4}}>{Array.from({length:12},(_,i)=>{const w=i+1;const d=wLog[w]?Object.keys(wLog[w]).length:0;const cur=w===week;const p=getPhase(w);return(<div key={w} style={{flex:1}}><div style={{height:40,borderRadius:6,background:cur?p.color:d>0?`${p.color}60`:"#1A1D23",border:cur?`2px solid ${p.color}`:"1px solid #2A2D35",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:cur||d>0?"#fff":"#4A4D55"}}>{d>0?`${d}/4`:w}</div></div>)})}</div>
+      </div>
+      {prof.cal>0&&(<div style={{...S.card,marginBottom:20}}><div style={{fontSize:13,fontWeight:700,color:"#8A8F98",letterSpacing:1.5,textTransform:"uppercase",marginBottom:12}}>Daily Targets</div><div style={{display:"flex",gap:16}}><div style={{flex:1,textAlign:"center"}}><div style={{fontSize:28,fontWeight:800,color:"#FF6B35"}}>{calories}</div><div style={{fontSize:11,color:"#6B7280",fontWeight:600}}>Calories</div></div><div style={{width:1,background:"#2A2D35"}}/><div style={{flex:1,textAlign:"center"}}><div style={{fontSize:28,fontWeight:800,color:"#4ECDC4"}}>{proteinG}g</div><div style={{fontSize:11,color:"#6B7280",fontWeight:600}}>Protein</div></div><div style={{width:1,background:"#2A2D35"}}/><div style={{flex:1,textAlign:"center"}}><div style={{fontSize:28,fontWeight:800,color:"#7B68EE"}}>{isM?`${prof.weightKg}kg`:`${prof.wLbs}lbs`}</div><div style={{fontSize:11,color:"#6B7280",fontWeight:600}}>Weight</div></div></div></div>)}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}><button onClick={()=>setTab("nutrition")} style={{background:"linear-gradient(135deg,#FF6B3515,#FF6B3508)",border:"1px solid #FF6B3530",borderRadius:14,padding:"14px",cursor:"pointer",textAlign:"left"}}><div style={{fontSize:12,fontWeight:700,color:"#FF6B35"}}>⚡ Nutrition & Meals</div></button><button onClick={()=>setTab("guide")} style={{background:"linear-gradient(135deg,#7B68EE15,#7B68EE08)",border:"1px solid #7B68EE30",borderRadius:14,padding:"14px",cursor:"pointer",textAlign:"left"}}><div style={{fontSize:12,fontWeight:700,color:"#7B68EE"}}>📖 Program Guide</div></button></div>
+    </div>
+  );
+
+  /* ═════════════════════ WORKOUT LIST ═════════════════════ */
+  const renderWorkoutList = () => {
+    const assignedDays = Object.keys(sched||{}).map(Number);
+    const assignedWorkouts = Object.values(sched||{});
+    const unassignedWo = WO_ORDER.filter(w => !assignedWorkouts.includes(w));
+
+    const handleDayTap = (dayIdx) => {
+      const cur = {...(sched||{})};
+      if (cur[dayIdx]) {
+        // Remove this day
+        delete cur[dayIdx];
+      } else {
+        // Assign next unassigned workout
+        const assigned = Object.values(cur);
+        const next = WO_ORDER.find(w => !assigned.includes(w));
+        if (next && Object.keys(cur).length < 4) {
+          cur[dayIdx] = next;
+        }
+      }
+      update("sched", cur);
+    };
+
+    const resetSched = () => { update("sched", {...DEFAULT_SCHED}); setEditingSched(false); };
+
+    return (
+    <div style={{padding:"0 20px 100px"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"start"}}><SectionTitle color="#FF6B35" pre="Part 2" title="Workouts"/><div style={{marginTop:36}}><UnitBtn isM={isM} toggle={toggleUnit}/></div></div>
+
+      {/* Schedule Editor Toggle */}
+      <div style={{...S.card,marginTop:20,marginBottom:12}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:editingSched?14:0}}>
+          <div style={{fontSize:12,fontWeight:700,color:"#8A8F98",letterSpacing:1.5,textTransform:"uppercase"}}>Your Schedule</div>
+          <button onClick={()=>setEditingSched(!editingSched)} style={{background:editingSched?"#FF6B3520":"#12141A",border:editingSched?"1px solid #FF6B35":"1px solid #2A2D35",borderRadius:10,padding:"6px 14px",cursor:"pointer",fontSize:11,fontWeight:700,color:editingSched?"#FF6B35":"#8A8F98"}}>
+            {editingSched ? "Done" : "✏️ Customize Days"}
+          </button>
+        </div>
+
+        {editingSched && (
+          <div style={{marginBottom:14}}>
+            <div style={{fontSize:12,color:"#6B7280",marginBottom:12,lineHeight:1.5}}>Tap 4 days for your workouts. Workouts auto-assign in order: Upper A → Lower A → Upper B → Lower B. Remaining days become rest days.</div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:6,marginBottom:12}}>
+              {DAYS.map((d,i) => {
+                const woKey = (sched||{})[i];
+                const wo = woKey ? WD[woKey] : null;
+                const isActive = !!wo;
+                return (
+                  <button key={i} onClick={()=>handleDayTap(i)} style={{
+                    background: isActive ? `${wo.color}20` : "#12141A",
+                    border: isActive ? `2px solid ${wo.color}` : "1px solid #2A2D35",
+                    borderRadius: 12, padding: "10px 4px", cursor: "pointer", textAlign: "center",
+                    transition: "all 0.2s"
+                  }}>
+                    <div style={{fontSize:11,fontWeight:700,color:isActive?"#fff":"#4A4D55"}}>{d}</div>
+                    {isActive && <div style={{fontSize:8,fontWeight:700,color:wo.color,marginTop:3,lineHeight:1.1}}>{wo.title.replace("Body ","")}</div>}
+                    {!isActive && <div style={{fontSize:8,color:"#3A3D45",marginTop:3}}>Rest</div>}
+                  </button>
+                );
+              })}
+            </div>
+            {Object.keys(sched||{}).length < 4 && (
+              <div style={{fontSize:11,color:"#E84855",fontWeight:600,marginBottom:8}}>⚠️ Pick {4 - Object.keys(sched||{}).length} more day{4 - Object.keys(sched||{}).length > 1 ? "s" : ""} — you need exactly 4 workout days</div>
+            )}
+            <button onClick={resetSched} style={{background:"none",border:"1px solid #2A2D35",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontSize:11,color:"#6B7280",fontWeight:600}}>↩ Reset to Default (Mon/Tue/Thu/Fri)</button>
+          </div>
+        )}
+      </div>
+
+      {/* Weekly View */}
+      <div style={{...S.card,marginBottom:20}}>
+        <div style={{fontSize:12,fontWeight:700,color:"#8A8F98",letterSpacing:1.5,textTransform:"uppercase",marginBottom:14}}>Weekly Schedule</div>
+        {DAYS.map((d,i) => {
+          const woKey = (sched||{})[i];
+          const w = woKey ? WD[woKey] : null;
+          return (
+            <div key={d} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:i<6?"1px solid #1E2028":"none"}}>
+              <div style={{width:36,fontSize:12,fontWeight:700,color:w?"#8A8F98":"#3A3D45"}}>{d}</div>
+              {w ? (
+                <button onClick={()=>{setAWo(woKey);setExpEx(null)}} style={{flex:1,display:"flex",alignItems:"center",gap:10,background:"none",border:"none",cursor:"pointer",padding:0}}>
+                  <div style={{width:36,height:36,borderRadius:10,background:`${w.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>{w.icon}</div>
+                  <div style={{textAlign:"left"}}>
+                    <div style={{fontSize:14,fontWeight:700,color:"#fff"}}>{w.title}</div>
+                    <div style={{fontSize:11,color:"#6B7280"}}>{w.subtitle} · 45-60 min</div>
+                  </div>
+                  {wLog[week]?.[woKey] && <div style={{marginLeft:"auto",width:20,height:20,borderRadius:10,background:w.color,display:"flex",alignItems:"center",justifyContent:"center"}}><Ic.Chk/></div>}
+                </button>
+              ) : (
+                <div style={{flex:1,fontSize:13,color:"#3A3D45",fontWeight:600}}>Rest Day 🛋️</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <div style={{background:"linear-gradient(135deg,#E8485512,#E8485508)",border:"1px solid #E8485530",borderRadius:16,padding:"18px 20px"}}><div style={{fontSize:14,fontWeight:800,color:"#E84855",marginBottom:8}}>⚠️ NON-NEGOTIABLE</div><div style={{fontSize:13,color:"#C0C4CC",lineHeight:1.7}}>EVERY SET → <strong style={{color:"#fff"}}>FAILURE</strong>. You physically cannot do another rep.</div></div>
+    </div>
+    );
+  };
+
+  /* ═════════════════════ WORKOUT DETAIL ═════════════════════ */
+  const renderWorkoutDetail = () => {
+    const exDone = wo.exercises.filter(ex => { const k=`${week}-${aWo}-${ex.id}`; const l=setLogs[k]; return l && Object.keys(l).length >= ex.sets; }).length;
+    const allDone = exDone === wo.exercises.length;
+    const isDone = wLog[week]?.[aWo];
+    return (
+    <div style={{padding:"0 20px 100px"}}>
+      <div style={{padding:"24px 0 4px",display:"flex",alignItems:"center",gap:12}}>
+        <button onClick={()=>setAWo(null)} style={{background:"#1A1D23",border:"1px solid #2A2D35",borderRadius:10,width:36,height:36,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"#8A8F98",fontSize:16}}>←</button>
+        <div style={{flex:1}}><div style={{fontSize:11,fontWeight:700,letterSpacing:2,color:wo.color,textTransform:"uppercase"}}>{dayForWo(aWo)}</div><h2 style={{fontSize:22,fontWeight:800,color:"#fff",margin:"2px 0 0"}}>{wo.title}</h2></div>
+        <UnitBtn isM={isM} toggle={toggleUnit}/>
+      </div>
+      <div style={{fontSize:12,color:"#6B7280",marginBottom:16,paddingLeft:48}}>{wo.subtitle} · {exDone}/{wo.exercises.length} · Wk {week} · {isM?"kg":"lbs"}</div>
+      {restL>0&&(<div style={{background:"linear-gradient(135deg,#FF6B3520,#FF6B3510)",border:"1px solid #FF6B3540",borderRadius:14,padding:"14px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}><span style={{fontSize:13,fontWeight:700,color:"#FF6B35"}}>⏱️ Rest</span><span style={{fontSize:22,fontWeight:900,color:"#fff",fontFamily:"monospace"}}>{Math.floor(restL/60)}:{(restL%60).toString().padStart(2,"0")}</span><button onClick={()=>setRestL(0)} style={{background:"#FF6B3530",border:"none",borderRadius:8,padding:"6px 12px",color:"#FF6B35",fontWeight:700,fontSize:11,cursor:"pointer"}}>Skip</button></div>)}
+
+      {showEx&&(<div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"#000000DD",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={()=>setShowEx(null)}><div style={{background:"#1A1D23",borderRadius:20,padding:"24px",maxWidth:380,width:"100%",border:`1px solid ${wo.color}30`}} onClick={e=>e.stopPropagation()}><div style={{width:"100%",height:160,marginBottom:16}}>{ExIllust[showEx.name]?ExIllust[showEx.name](wo.color):<div style={{textAlign:"center",paddingTop:60,color:"#6B7280"}}>Illustration</div>}</div><h3 style={{fontSize:18,fontWeight:800,color:"#fff",margin:"0 0 6px"}}>{showEx.name}</h3><div style={{fontSize:12,color:wo.color,fontWeight:700,marginBottom:10}}>{showEx.muscles}</div><div style={{fontSize:13,color:"#C0C4CC",lineHeight:1.7,marginBottom:14}}><strong style={{color:"#FF6B35"}}>Form Tips: </strong>{showEx.tips}</div><div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}><div style={{background:"#12141A",borderRadius:8,padding:"6px 12px",fontSize:11,color:"#8A8F98"}}>🔄 {showEx.sets}s × {showEx.reps}</div><div style={{background:"#12141A",borderRadius:8,padding:"6px 12px",fontSize:11,color:"#8A8F98"}}>⏱️ {showEx.rest}</div></div><button onClick={()=>setShowEx(null)} style={{width:"100%",background:wo.color,border:"none",borderRadius:12,padding:"12px",cursor:"pointer",fontSize:14,fontWeight:700,color:"#fff"}}>Got It</button></div></div>)}
+
+      {wo.exercises.map((ex,idx)=>{
+        const lk=`${week}-${aWo}-${ex.id}`;const ml=setLogs[lk]||{};const isExp=expEx===ex.id;const done=Object.keys(ml).length>=ex.sets;
+        return(<div key={ex.id} style={{background:done?`${wo.color}08`:"#1A1D23",border:done?`1px solid ${wo.color}25`:"1px solid #2A2D35",borderRadius:16,marginBottom:10,overflow:"hidden"}}>
+          <div style={{display:"flex",alignItems:"center"}}><button onClick={()=>setExpEx(isExp?null:ex.id)} style={{flex:1,background:"none",border:"none",cursor:"pointer",padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}><div style={{width:30,height:30,borderRadius:10,background:done?wo.color:"#12141A",border:done?"none":"1px solid #2A2D35",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:800,color:done?"#fff":"#6B7280",flexShrink:0}}>{done?<Ic.Chk/>:idx+1}</div><div style={{flex:1,textAlign:"left"}}><div style={{fontSize:14,fontWeight:700,color:"#fff"}}>{ex.name}</div><div style={{fontSize:11,color:"#6B7280",marginTop:2}}>{ex.sets}s × {ex.reps} · {ex.muscles}</div></div><div style={{color:"#4A4D55"}}>{isExp?<Ic.Up/>:<Ic.Dn/>}</div></button><button onClick={()=>setShowEx(ex)} style={{background:wo.color+"18",border:"none",borderRadius:10,width:34,height:34,marginRight:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,color:wo.color}}><Ic.Eye/></button></div>
+          {isExp&&(<div style={{padding:"0 16px 16px"}}>
+            <div style={{width:"100%",height:90,marginBottom:10,background:"#12141A",borderRadius:12,overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center"}}>{ExIllust[ex.name]?ExIllust[ex.name](wo.color):<span style={{color:"#6B7280",fontSize:12}}>Exercise</span>}</div>
+            <div style={{fontSize:12,color:"#C0C4CC",marginBottom:10,padding:"10px 14px",background:"#12141A",borderRadius:10,lineHeight:1.6}}><span style={{color:"#FF6B35",fontWeight:700}}>💡 </span>{ex.tips}</div>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:10}}>{[{l:`${ex.sets} sets`,I:<Ic.Tgt/>},{l:ex.reps,I:<Ic.Fire/>},{l:ex.rest,I:<Ic.Clk/>}].map((c,i)=>(<div key={i} style={{display:"flex",alignItems:"center",gap:4,background:"#12141A",border:"1px solid #2A2D35",borderRadius:8,padding:"5px 10px",fontSize:11,color:"#8A8F98",fontWeight:600}}>{c.I} {c.l}</div>))}</div>
+            <div style={{fontSize:10,color:"#E84855",fontWeight:700,marginBottom:8}}>⚠️ EVERY SET → FAILURE</div>
+            <div style={{display:"flex",gap:4,marginBottom:5}}><div style={{width:28}}/><div style={{flex:1,fontSize:10,color:"#6B7280",fontWeight:700,textAlign:"center"}}>{isM?"KG":"LBS"}</div><div style={{flex:1,fontSize:10,color:"#6B7280",fontWeight:700,textAlign:"center"}}>REPS</div><div style={{width:32}}/></div>
+            {Array.from({length:ex.sets},(_,si)=>{
+              const sn=si+1;const lg=ml[sn];
+              return(<div key={si} style={{display:"flex",gap:6,alignItems:"center",marginBottom:4}}>
+                <div style={{width:28,height:28,borderRadius:8,fontSize:11,fontWeight:800,background:lg?wo.color:"#12141A",border:lg?"none":"1px solid #2A2D35",color:lg?"#fff":"#4A4D55",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{sn}</div>
+                <input type="number" min="0" placeholder={isM?"kg":"lbs"} value={lg?.weight||""} onChange={e=>{const v=Math.max(0,e.target.value);update("setLogs",p=>({...p,[lk]:{...p[lk],[sn]:{...(p[lk]?.[sn]||{}),weight:v,unit:isM?"kg":"lbs"}}}))}} style={{flex:1,background:"#12141A",border:"1px solid #2A2D35",borderRadius:8,padding:"8px 10px",color:"#fff",fontSize:14,fontWeight:600,outline:"none",fontFamily:"inherit",minWidth:0}}/>
+                <input type="number" min="0" placeholder="reps" value={lg?.reps||""} onChange={e=>{const v=Math.max(0,e.target.value);update("setLogs",p=>({...p,[lk]:{...p[lk],[sn]:{...(p[lk]?.[sn]||{}),reps:v}}}))}} style={{flex:1,background:"#12141A",border:"1px solid #2A2D35",borderRadius:8,padding:"8px 10px",color:"#fff",fontSize:14,fontWeight:600,outline:"none",fontFamily:"inherit",minWidth:0}}/>
+                <button onClick={()=>setRestL(restSec(ex.rest))} style={{background:"#FF6B3518",border:"1px solid #FF6B3530",borderRadius:8,padding:"8px",cursor:"pointer",color:"#FF6B35",flexShrink:0,display:"flex",alignItems:"center"}}><Ic.Clk/></button>
+              </div>)
+            })}
+          </div>)}
+        </div>)})}
+
+      {/* FIX #5: Undo workout completion + clearer button states */}
+      {isDone ? (
+        <div style={{textAlign:"center",padding:"16px"}}>
+          <div style={{color:wo.color,fontSize:15,fontWeight:800,marginBottom:8}}>✅ Completed Week {week}!</div>
+          <button onClick={()=>update("wLog",p=>{const n={...p};if(n[week]){const w={...n[week]};delete w[aWo];n[week]=w;}return n;})} style={{background:"none",border:"1px solid #2A2D35",borderRadius:10,padding:"8px 16px",cursor:"pointer",color:"#6B7280",fontSize:12,fontWeight:600,display:"inline-flex",alignItems:"center",gap:5}}><Ic.Undo/> Undo</button>
+        </div>
+      ) : (
+        <button onClick={()=>allDone&&update("wLog",p=>({...p,[week]:{...(p[week]||{}),[aWo]:true}}))} style={{width:"100%",background:allDone?`linear-gradient(135deg,${wo.color},${wo.color}CC)`:"#2A2D35",border:"none",borderRadius:14,padding:"16px",cursor:allDone?"pointer":"default",fontSize:14,fontWeight:800,color:"#fff",marginTop:12,opacity:allDone?1:0.5}}>
+          {allDone ? "✅ Complete Workout" : `Log all ${wo.exercises.length} exercises to complete (${exDone} done)`}
+        </button>
+      )}
+    </div>
+  )};
+
+  /* ═════════════════════ NUTRITION ═════════════════════ */
+  const renderNutrition = () => (
+    <div style={{padding:"0 20px 100px"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"start"}}><SectionTitle color="#FF6B35" pre="Nutrition" title="Fuel Your Gains"/><div style={{marginTop:36}}><UnitBtn isM={isM} toggle={toggleUnit}/></div></div>
+
+      <div style={{...S.card,marginTop:20,marginBottom:16}}><label style={{fontSize:12,fontWeight:700,color:"#8A8F98",letterSpacing:1,textTransform:"uppercase"}}>Weight ({isM?"kg":"lbs"})</label>
+        <div style={{display:"flex",alignItems:"center",gap:12,marginTop:10}}>
+          <input type="number" min="0" value={wInput} onChange={e=>update("wInput",String(Math.max(0,e.target.value)))} placeholder={isM?"80":"176"} style={{flex:1,background:"#12141A",border:"1px solid #2A2D35",borderRadius:12,padding:"14px 16px",color:"#fff",fontSize:20,fontWeight:700,outline:"none",fontFamily:"inherit"}}/>
+          <div style={{color:"#6B7280",fontSize:14}}>{isM?"kg":"lbs"}</div>
+          {wInput&&<div style={{background:"#4ECDC415",color:"#4ECDC4",padding:"8px 14px",borderRadius:10,fontSize:13,fontWeight:700}}>= {isM?`${Math.round(weightLbs)} lbs`:`${Math.round(weightKg*10)/10} kg`}</div>}
+        </div>
+      </div>
+
+      <div style={{...S.card,marginBottom:16}}><label style={{fontSize:12,fontWeight:700,color:"#8A8F98",letterSpacing:1,textTransform:"uppercase"}}>Goal</label>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginTop:10}}>
+          {[["lose","Lose","🔻"],["maintain","Maintain","⚖️"],["gain","Gain","💪"]].map(([k,l,e])=>(<button key={k} onClick={()=>update("prof",p=>({...p,goal:k,mult:gm[k][1]}))} style={{background:prof.goal===k?"#FF6B3518":"#12141A",border:prof.goal===k?"2px solid #FF6B35":"1px solid #2A2D35",borderRadius:12,padding:"14px 8px",cursor:"pointer",textAlign:"center"}}><div style={{fontSize:22}}>{e}</div><div style={{fontSize:12,fontWeight:700,color:prof.goal===k?"#FF6B35":"#8A8F98",marginTop:4}}>{l}</div></button>))}
+        </div>
+      </div>
+
+      <div style={{...S.card,marginBottom:16}}><label style={{fontSize:12,fontWeight:700,color:"#8A8F98",letterSpacing:1,textTransform:"uppercase"}}>Multiplier</label>
+        <div style={{display:"flex",gap:8,marginTop:10}}>{gm[prof.goal].map(m=>(<button key={m} onClick={()=>update("prof",p=>({...p,mult:m}))} style={{flex:1,background:prof.mult===m?"#FF6B35":"#12141A",border:prof.mult===m?"none":"1px solid #2A2D35",borderRadius:12,padding:"14px",cursor:"pointer",fontSize:18,fontWeight:800,color:prof.mult===m?"#fff":"#6B7280"}}>×{m}</button>))}</div>
+      </div>
+
+      {wInputNum>0&&(<div style={{background:"linear-gradient(135deg,#FF6B3512,#4ECDC410)",border:"1px solid #FF6B3525",borderRadius:20,padding:"24px",marginBottom:20}}>
+        <div style={{fontSize:12,fontWeight:700,letterSpacing:2,color:"#FF6B35",textTransform:"uppercase",marginBottom:16}}>Daily Targets</div>
+        <div style={{display:"flex",gap:20,justifyContent:"center",marginBottom:16}}><div style={{textAlign:"center"}}><div style={{fontSize:38,fontWeight:900,color:"#FF6B35",lineHeight:1}}>{calories}</div><div style={{fontSize:12,color:"#8A8F98",fontWeight:600,marginTop:4}}>Calories</div></div><div style={{width:1,background:"#2A2D3580"}}/><div style={{textAlign:"center"}}><div style={{fontSize:38,fontWeight:900,color:"#4ECDC4",lineHeight:1}}>{proteinG}g</div><div style={{fontSize:12,color:"#8A8F98",fontWeight:600,marginTop:4}}>Protein</div></div></div>
+        <div style={{background:"#12141A80",borderRadius:12,padding:"12px 16px",fontSize:12,color:"#8A8F98",lineHeight:1.6}}><strong style={{color:"#fff"}}>Formula:</strong> {isM?`${wInput}kg × 2.2 = ${Math.round(weightLbs)}lbs`:`${wInput}lbs`} × {prof.mult} = {calories} cal | <strong style={{color:"#fff"}}>Protein:</strong> {Math.round(weightLbs)} × 1 = {proteinG}g</div>
+      </div>)}
+
+      <div style={{fontSize:13,fontWeight:700,color:"#8A8F98",letterSpacing:1.5,textTransform:"uppercase",marginBottom:12}}>Meal Ideas</div>
+      <div style={{display:"flex",gap:6,marginBottom:14,overflowX:"auto"}}>{["breakfast","lunch","dinner","snack"].map(t=>(<button key={t} onClick={()=>setMTab(t)} style={{padding:"8px 16px",borderRadius:10,fontSize:12,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap",background:mTab===t?"#FF6B3520":"#1A1D23",border:mTab===t?"1px solid #FF6B35":"1px solid #2A2D35",color:mTab===t?"#FF6B35":"#6B7280",textTransform:"capitalize"}}>{t}</button>))}</div>
+      <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:24}}>{MEALS[mTab].map((m,mi)=>{const t=mealTotals(m.items);return(<div key={mi} style={{...S.card,padding:"16px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:22}}>{m.emoji}</span><span style={{fontSize:15,fontWeight:700,color:"#fff"}}>{m.name}</span></div><div style={{fontSize:12,fontWeight:700,color:"#FF6B35"}}>{t.cal} cal</div></div><div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:10}}>{m.items.map((n,ii)=>{const f=FOODS.find(x=>x.name===n);return f?(<div key={ii} style={{background:"#12141A",borderRadius:8,padding:"5px 10px",fontSize:11,color:"#8A8F98"}}>{f.emoji} {f.name} <span style={{color:"#4ECDC4"}}>({f.protein}g P)</span></div>):null})}</div><div style={{display:"flex",gap:12,fontSize:11,color:"#6B7280"}}><span>🔥 {t.cal}</span><span style={{color:"#4ECDC4"}}>💪 {t.protein}g P</span><span>🍞 {t.carbs}g C</span><span>🧈 {Math.round(t.fat)}g F</span></div></div>)})}</div>
+
+      {/* Food Logger */}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}><div style={{fontSize:13,fontWeight:700,color:"#8A8F98",letterSpacing:1.5,textTransform:"uppercase"}}>Today's Log</div><button onClick={()=>setShowDb(!showDb)} style={{background:"#FF6B3520",border:"1px solid #FF6B3540",borderRadius:10,padding:"6px 14px",cursor:"pointer",fontSize:11,fontWeight:700,color:"#FF6B35"}}>{showDb?"Close":"+ Add Food"}</button></div>
+      {showDb&&(<div style={{...S.card,padding:"16px",marginBottom:14}}>
+        <div style={{display:"flex",gap:6,marginBottom:10,overflowX:"auto"}}>{[{k:"all",l:"All"},{k:"protein",l:"🥩 Protein"},{k:"carb",l:"🍚 Carbs"},{k:"fat",l:"🥑 Fats"},{k:"veggie",l:"🥦 Veggies"}].map(f=>(<button key={f.k} onClick={()=>setFFilt(f.k)} style={{padding:"5px 12px",borderRadius:8,fontSize:11,fontWeight:600,cursor:"pointer",whiteSpace:"nowrap",background:fFilt===f.k?"#4ECDC420":"#12141A",border:fFilt===f.k?"1px solid #4ECDC4":"1px solid #2A2D35",color:fFilt===f.k?"#4ECDC4":"#6B7280"}}>{f.l}</button>))}</div>
+        {FOODS.filter(f=>fFilt==="all"||f.cat===fFilt).map((f,fi)=>(<button key={fi} onClick={()=>update("addedF",p=>[...p,{...f,qty:1}])} style={{width:"100%",display:"flex",alignItems:"center",gap:10,background:"none",border:"none",borderBottom:"1px solid #1E2028",padding:"10px 0",cursor:"pointer",textAlign:"left"}}><span style={{fontSize:20}}>{f.emoji}</span><div style={{flex:1}}><div style={{fontSize:13,fontWeight:600,color:"#fff"}}>{f.name}</div><div style={{fontSize:11,color:"#6B7280"}}>{f.serving} · {f.cal} cal · {f.protein}g P</div></div><div style={{color:"#4ECDC4",fontSize:18,fontWeight:700}}>+</div></button>))}
+      </div>)}
+      {addedF.length>0&&(<div style={{...S.card,padding:"16px",marginBottom:14}}>
+        {addedF.map((f,fi)=>(<div key={fi} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:fi<addedF.length-1?"1px solid #1E2028":"none"}}>
+          <span style={{fontSize:18}}>{f.emoji}</span>
+          <div style={{flex:1}}><div style={{fontSize:13,fontWeight:600,color:"#fff"}}>{f.name}</div><div style={{fontSize:11,color:"#6B7280"}}>{f.cal*f.qty} cal · {f.protein*f.qty}g P</div></div>
+          {/* FIX #9: quantity adjuster */}
+          <div style={{display:"flex",alignItems:"center",gap:4}}>
+            <button onClick={()=>update("addedF",p=>p.map((x,i)=>i===fi?{...x,qty:Math.max(1,x.qty-1)}:x))} style={{width:24,height:24,borderRadius:6,background:"#12141A",border:"1px solid #2A2D35",color:"#8A8F98",cursor:"pointer",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
+            <span style={{fontSize:13,fontWeight:700,color:"#fff",minWidth:18,textAlign:"center"}}>{f.qty}</span>
+            <button onClick={()=>update("addedF",p=>p.map((x,i)=>i===fi?{...x,qty:x.qty+1}:x))} style={{width:24,height:24,borderRadius:6,background:"#12141A",border:"1px solid #2A2D35",color:"#8A8F98",cursor:"pointer",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
+          </div>
+          <button onClick={()=>update("addedF",p=>p.filter((_,i)=>i!==fi))} style={{background:"#E8485520",border:"none",borderRadius:8,width:28,height:28,cursor:"pointer",color:"#E84855",fontSize:14,fontWeight:700}}>×</button>
+        </div>))}
+        <div style={{marginTop:12,padding:"12px 16px",background:"linear-gradient(135deg,#FF6B3510,#4ECDC408)",borderRadius:10,border:"1px solid #FF6B3520"}}>
+          <div style={{display:"flex",justifyContent:"space-between",fontSize:12,fontWeight:700,marginBottom:6}}><span style={{color:"#8A8F98"}}>Logged</span><span style={{color:calories>0&&addT.cal>=calories?"#4ECDC4":"#FF6B35"}}>{Math.round(addT.cal)} / {calories||"—"} cal</span></div>
+          {calories>0&&<div style={{background:"#12141A",borderRadius:6,height:8,overflow:"hidden",marginBottom:8}}><div style={{height:"100%",width:`${Math.min(100,addT.cal/calories*100)}%`,background:"linear-gradient(90deg,#FF6B35,#4ECDC4)",borderRadius:6,transition:"width 0.3s"}}/></div>}
+          <div style={{display:"flex",justifyContent:"space-around",fontSize:11}}><span style={{color:"#4ECDC4"}}>💪 {Math.round(addT.protein)}/{proteinG||"—"}g P</span><span style={{color:"#6B7280"}}>🍞 {Math.round(addT.carbs)}g C</span><span style={{color:"#6B7280"}}>🧈 {Math.round(addT.fat)}g F</span></div>
+        </div>
+        <button onClick={()=>update("addedF",[])} style={{marginTop:10,width:"100%",background:"#1E2028",border:"1px solid #2A2D35",borderRadius:10,padding:"10px",cursor:"pointer",color:"#6B7280",fontSize:12,fontWeight:600}}>Clear Today's Log</button>
+      </div>)}
+    </div>
+  );
+
+  /* ═════════════════════ PROGRESS ═════════════════════ */
+  const renderProgress = () => (
+    <div style={{padding:"0 20px 100px"}}>
+      <SectionTitle color="#4ECDC4" pre="Track" title="Progress"/>
+      <div style={{...S.card,marginTop:20,marginBottom:20}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}><div style={{fontSize:12,fontWeight:700,color:"#8A8F98",letterSpacing:1.5,textTransform:"uppercase"}}>Current Week</div><div style={{display:"flex",gap:6}}><button onClick={()=>update("week",w=>Math.max(1,w-1))} style={{width:32,height:32,borderRadius:8,background:"#12141A",border:"1px solid #2A2D35",color:"#8A8F98",cursor:"pointer",fontSize:16}}>‹</button><div style={{width:48,height:32,borderRadius:8,background:"#FF6B3518",border:"1px solid #FF6B3530",display:"flex",alignItems:"center",justifyContent:"center",color:"#FF6B35",fontSize:16,fontWeight:800}}>{week}</div><button onClick={()=>update("week",w=>Math.min(12,w+1))} style={{width:32,height:32,borderRadius:8,background:"#12141A",border:"1px solid #2A2D35",color:"#8A8F98",cursor:"pointer",fontSize:16}}>›</button></div></div>
+        <div style={{background:"#12141A",borderRadius:8,height:8,overflow:"hidden"}}><div style={{height:"100%",width:`${(week/12)*100}%`,background:"linear-gradient(90deg,#FF6B35,#4ECDC4)",borderRadius:8,transition:"width 0.3s"}}/></div>
+      </div>
+      <div style={{marginBottom:20}}><div style={{fontSize:12,fontWeight:700,color:"#8A8F98",letterSpacing:1.5,textTransform:"uppercase",marginBottom:12}}>Phases</div>
+        {PHASES.map((p,i)=>{const a=(week<=2&&i===0)||(week>=3&&week<=6&&i===1)||(week>=7&&week<=10&&i===2)||(week>=11&&i===3);return(<div key={i} style={{display:"flex",gap:14,alignItems:"center",background:a?`${p.color}10`:"transparent",border:a?`1px solid ${p.color}30`:"1px solid transparent",borderRadius:14,padding:"14px 16px",marginBottom:8}}><div style={{width:40,height:40,borderRadius:12,background:a?p.color:"#1A1D23",border:a?"none":"1px solid #2A2D35",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:900,color:"#fff",flexShrink:0}}>{i+1}</div><div style={{flex:1}}><div style={{display:"flex",justifyContent:"space-between"}}><div style={{fontSize:15,fontWeight:700,color:a?"#fff":"#6B7280"}}>{p.label}</div><div style={{fontSize:11,color:a?p.color:"#4A4D55",fontWeight:600}}>Wk {p.weeks}</div></div><div style={{fontSize:12,color:"#6B7280",marginTop:2}}>{p.desc}</div></div></div>)})}
+      </div>
+      <div style={{fontSize:12,fontWeight:700,color:"#8A8F98",letterSpacing:1.5,textTransform:"uppercase",marginBottom:12}}>Completion</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:20}}>{Array.from({length:12},(_,i)=>{const w=i+1;const d=wLog[w]?Object.keys(wLog[w]).length:0;const c=w===week;const p=getPhase(w);return(<div key={w} style={{background:c?`${p.color}15`:"#1A1D23",border:c?`2px solid ${p.color}`:"1px solid #2A2D35",borderRadius:12,padding:"12px 8px",textAlign:"center"}}><div style={{fontSize:10,color:"#6B7280",fontWeight:600,marginBottom:4}}>WK {w}</div><div style={{display:"flex",gap:3,justifyContent:"center"}}>{[0,1,2,3].map(x=>(<div key={x} style={{width:8,height:8,borderRadius:4,background:x<d?p.color:"#2A2D35"}}/>))}</div></div>)})}</div>
+      <div style={S.card}><div style={{fontSize:12,fontWeight:700,color:"#FF6B35",letterSpacing:1,textTransform:"uppercase",marginBottom:10}}>Bench Press Example</div><div style={{fontSize:13,color:"#C0C4CC",lineHeight:1.8}}>{isM?<>Wk 3 → 100kg × 8<br/>Wk 6 → 100kg × 10 ✨<br/>Wk 7 → 105kg × 6-8<br/>Wk 11 → 73kg × 12 (deload)</>:<>Wk 3 → 220lbs × 8<br/>Wk 6 → 220lbs × 10 ✨<br/>Wk 7 → 231lbs × 6-8<br/>Wk 11 → 161lbs × 12 (deload)</>}</div></div>
+    </div>
+  );
+
+  /* ═════════════════════ GUIDE ═════════════════════ */
+  const renderGuide = () => (
+    <div style={{padding:"0 20px 100px"}}>
+      <SectionTitle color="#7B68EE" pre="Guide" title="Program Guide"/>
+      <div style={{...S.card,marginTop:20,marginBottom:20}}>
+        <div style={{fontSize:12,fontWeight:700,color:"#8A8F98",letterSpacing:1.5,textTransform:"uppercase",marginBottom:12}}>Profile</div>
+        <div style={{marginBottom:10}}><label style={{fontSize:11,color:"#6B7280",fontWeight:600}}>Name</label><input value={prof.name||""} onChange={e=>update("prof",p=>({...p,name:e.target.value}))} placeholder="Your name" style={{...S.input,marginTop:4}}/></div>
+        <div style={{marginBottom:10}}><label style={{fontSize:11,color:"#6B7280",fontWeight:600}}>Start Date</label><input type="date" value={prof.startDate||""} onChange={e=>update("prof",p=>({...p,startDate:e.target.value}))} style={{...S.input,marginTop:4}}/></div>
+        <div><label style={{fontSize:11,color:"#6B7280",fontWeight:600}}>Notes</label><textarea value={prof.notes||""} onChange={e=>update("prof",p=>({...p,notes:e.target.value}))} placeholder="Goals..." style={{...S.input,marginTop:4,minHeight:60,resize:"vertical",fontSize:13}}/></div>
+      </div>
+      <div style={{background:"linear-gradient(135deg,#FF6B3510,#E8485510)",border:"1px solid #FF6B3525",borderRadius:16,padding:"20px",marginBottom:20}}>
+        <div style={{fontSize:16,fontWeight:800,color:"#fff",marginBottom:10}}>The Philosophy</div><div style={{fontSize:13,color:"#C0C4CC",lineHeight:1.8}}>12 weeks of average programming executed consistently beats perfect programming attempted inconsistently.</div>
+        <div style={{marginTop:14,padding:"12px 16px",background:"#12141A80",borderRadius:10,fontSize:13,fontWeight:700,color:"#E84855",textAlign:"center"}}>DON'T THINK. DON'T ANALYSE. JUST EXECUTE.</div>
+      </div>
+      <div style={{...S.card,marginBottom:20}}><div style={{fontSize:12,fontWeight:700,color:"#8A8F98",letterSpacing:1.5,textTransform:"uppercase",marginBottom:14}}>Key Rules</div>
+        {[["📅","Show up 4 days/week"],["📋","Execute exact exercises"],["🥗","Follow nutrition formula"],["💀","Every set to FAILURE"],["🔒","Change nothing 12 weeks"]].map(([e,r],i)=>(<div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:i<4?"1px solid #1E2028":"none"}}><span style={{fontSize:20}}>{e}</span><span style={{fontSize:14,color:"#E0E0E0",fontWeight:600}}>{r}</span></div>))}
+      </div>
+      <div style={{fontSize:12,fontWeight:700,color:"#8A8F98",letterSpacing:1.5,textTransform:"uppercase",marginBottom:12}}>FAQ</div>
+      {FAQS.map((f,i)=>(<div key={i} style={{background:"#1A1D23",borderRadius:14,border:openFaq===i?"1px solid #7B68EE30":"1px solid #2A2D35",marginBottom:8,overflow:"hidden"}}><button onClick={()=>setOpenFaq(openFaq===i?null:i)} style={{width:"100%",background:"none",border:"none",cursor:"pointer",padding:"14px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}><span style={{fontSize:14,fontWeight:700,color:"#fff",textAlign:"left"}}>{f.q}</span><span style={{color:"#4A4D55",flexShrink:0,marginLeft:8}}>{openFaq===i?<Ic.Up/>:<Ic.Dn/>}</span></button>{openFaq===i&&<div style={{padding:"0 16px 14px",fontSize:13,color:"#8A8F98",lineHeight:1.7}}>{f.a}</div>}</div>))}
+    </div>
+  );
+
+  /* ═════════════════════ MAIN RENDER ═════════════════════ */
+  return (
+    <div style={{maxWidth:430,margin:"0 auto",minHeight:"100vh",background:"#12141A",fontFamily:"'DM Sans','SF Pro Display',-apple-system,sans-serif",position:"relative"}}>
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+      <div style={{overflowY:"auto",height:"100vh",paddingBottom:80}}>
+        {tab==="home" && renderHome()}
+        {tab==="workout" && (aWo && wo ? renderWorkoutDetail() : renderWorkoutList())}
+        {tab==="nutrition" && renderNutrition()}
+        {tab==="progress" && renderProgress()}
+        {tab==="guide" && renderGuide()}
+      </div>
+      <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:"linear-gradient(180deg,#12141AE0,#12141A)",backdropFilter:"blur(20px)",borderTop:"1px solid #1E2028",padding:"8px 8px 12px",display:"flex",justifyContent:"space-around",zIndex:100}}>
+        {navItems.map(({id,l,I})=>{const a=tab===id;return(<button key={id} onClick={()=>{setTab(id);if(id!=="workout")setAWo(null)}} style={{background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"6px 12px",borderRadius:12,minWidth:56,color:a?"#FF6B35":"#4A4D55"}}><I/><span style={{fontSize:10,fontWeight:700}}>{l}</span>{a&&<div style={{width:4,height:4,borderRadius:2,background:"#FF6B35",marginTop:-1}}/>}</button>)})}
+      </div>
+    </div>
+  );
+}
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(React.createElement(App));
+  </script>
 </body>
 </html>
