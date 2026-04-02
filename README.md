@@ -145,9 +145,3 @@ This is a personal project, but suggestions are welcome! Open an issue or submit
 MIT License — free to use, modify, and distribute.
 
 ---
-
-<p align="center">
-  <strong>DON'T THINK. DON'T ANALYSE. DON'T OPTIMISE. JUST EXECUTE.</strong>
-  <br><br>
-  Built with 💪 by <a href="https://github.com/jayeshsawarkar">Jayesh Sawarkar</a>
-</p>
