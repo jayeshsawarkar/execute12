@@ -1,4 +1,4 @@
-# Execute12 — The 12-Week Execution Program
+# Execute12 : The 12-Week Execution Program
 
 **Stop overthinking. Start executing.**
 
